@@ -137,4 +137,4 @@ A prioridade do MVP será colocar essas três áreas para funcionar em conjunto,
 
 
 # Para o desenvolvimento:
-Crie planos de implementação e tarefas, atuando de forma estruturada. Nos arquivos implementation.md e tasks.md
+Crie planos de implementação e tarefas, atuando de forma estruturada. Nos arquivos implementation.md e tasks.md. Separe-os em backend e frontend, também, para o desenvolvimento poder ser paralelo sem gargalos.
