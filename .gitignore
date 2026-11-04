@@ -1,0 +1,17 @@
+# Dependências e builds
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Variáveis de ambiente locais e bancos SQLite
+.env
+.env.local
+*.db
+*.db-journal
+
+# Sistema Operacional e IDEs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
