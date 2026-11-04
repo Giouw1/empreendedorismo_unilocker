@@ -48,11 +48,11 @@
 ## Fase 2B — Desenvolvimento Completo do Backend (`implementation_backend.md`)
 > **Escopo Exclusivo:** `/backend`
 
-- [ ] Configurar Prisma ORM + SQLite (`prisma/schema.prisma` com as 8 tabelas essenciais) e `prisma/seed.ts`.
-- [ ] Implementar autenticação JWT real (`@nestjs/jwt` + `bcrypt`), `ValidationPipe` e guards RBAC + *Ownership*.
-- [ ] Migrar `LocationsService` e `ReservationsService` para Prisma com transação anti-concorrência (`prisma.$transaction`) e retenção segura em `Expired`.
-- [ ] Migrar `AccessService`, `PartnersService`, `SupportService` e `AdminService` preservando 100% dos contratos JSON.
-- [ ] Criar testes unitários e teste E2E (`mvp-flow.e2e-spec.ts`) validando todo o ciclo de aluguel.
+- [x] Configurar Prisma ORM + SQLite (`prisma/schema.prisma` com as 8 tabelas essenciais) e `prisma/seed.ts`.
+- [x] Implementar autenticação JWT real (`@nestjs/jwt` + `bcrypt`), `ValidationPipe` e guards RBAC + *Ownership*.
+- [x] Migrar `LocationsService` e `ReservationsService` para Prisma com transação anti-concorrência (`prisma.$transaction`) e retenção segura em `Expired`.
+- [x] Migrar `AccessService`, `PartnersService`, `SupportService` e `AdminService` preservando 100% dos contratos JSON.
+- [x] Criar testes unitários e teste E2E (`mvp-flow.e2e-spec.ts`) validando todo o ciclo de aluguel.
 
 ---
 

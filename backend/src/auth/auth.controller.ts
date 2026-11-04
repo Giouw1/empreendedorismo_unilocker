@@ -1,24 +1,10 @@
 import { Body, Controller, HttpCode, Post } from '@nestjs/common';
-import { AuthResponseDto, LoginRequest, RegisterRequest } from '../common/contracts/api.contracts';
-import { Public } from '../common/auth/mock-auth.guard';
+import { Public } from '../common/auth/auth.guard';
+import { LoginBody, RegisterBody } from '../common/dto/requests.dto';
 import { AuthService } from './auth.service';
-
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
-
-  /** POST /api/auth/register */
-  @Public()
-  @Post('register')
-  register(@Body() dto: RegisterRequest): AuthResponseDto {
-    return this.authService.register(dto);
-  }
-
-  /** POST /api/auth/login */
-  @Public()
-  @Post('login')
-  @HttpCode(200)
-  login(@Body() dto: LoginRequest): AuthResponseDto {
-    return this.authService.login(dto);
-  }
+  constructor(private readonly auth: AuthService) {}
+  @Public() @Post('register') register(@Body() dto: RegisterBody) { return this.auth.register(dto); }
+  @Public() @Post('login') @HttpCode(200) login(@Body() dto: LoginBody) { return this.auth.login(dto); }
 }

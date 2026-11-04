@@ -1,58 +1,25 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import {
-  CreateTicketRequest,
-  SupportTicketDto,
-  TicketPriority,
-} from '../common/contracts/api.contracts';
-import { MockDbService, UserRecord } from '../common/mock/mock-db.service';
-
+import { Injectable } from '@nestjs/common';
+import { CreateTicketRequest, UserDto } from '../common/contracts/api.contracts';
+import { Store } from '../common/store.service';
+import { ticketDto, ticketInclude } from '../common/mappers';
+import { ticketPriority } from '../common/domain';
 @Injectable()
 export class SupportService {
-  constructor(private readonly db: MockDbService) {}
-
-  /**
-   * Cria chamado de suporte com priorização automática em casos críticos.
-   *
-   * TODO [PLANO-BACKEND]: persistir via Prisma e marcar reserva como `Incident`
-   * quando `category === 'ITEMS_TRAPPED'`.
-   */
-  createTicket(user: UserRecord, dto: CreateTicketRequest): SupportTicketDto {
-    if (!dto?.category || !dto?.description?.trim()) {
-      throw new BadRequestException('Informe a categoria e descreva o problema.');
-    }
-
-    const highCategories = ['LOCKER_WONT_OPEN', 'ITEMS_TRAPPED', 'EXPIRED_RENTAL'];
-    const priority: TicketPriority = highCategories.includes(dto.category) ? 'HIGH' : 'MEDIUM';
-    const now = this.db.now();
-
-    const ticket = {
-      id: this.db.nextId('tk'),
-      userId: user.id,
-      reservationId: dto.reservationId || null,
-      category: dto.category,
-      priority,
-      description: dto.description.trim(),
-      status: 'OPEN' as const,
-      adminNotes: null,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    if (dto.reservationId && dto.category === 'ITEMS_TRAPPED') {
-      const reservation = this.db.findReservationById(dto.reservationId);
-      if (reservation && reservation.userId === user.id && reservation.status === 'Active') {
-        reservation.status = 'Incident';
+  constructor(private readonly store: Store) {}
+  async createTicket(user: UserDto, dto: CreateTicketRequest) {
+    await this.store.refreshExpired();
+    return this.store.db.atomic(async tx => {
+      if (dto.reservationId) {
+        const r = await this.store.reservation(tx, user, dto.reservationId);
+        if (dto.category === 'ITEMS_TRAPPED' && ['Active', 'Expired'].includes(r.status)) {
+          await tx.reservation.update({ where: { id: r.id }, data: { status: 'Incident' } });
+        }
       }
-    }
-
-    this.db.supportTickets.push(ticket);
-    return this.db.toSupportTicketDto(ticket);
+      return ticketDto(await tx.supportTicket.create({ data: { ...dto, userId: user.id, priority: ticketPriority(dto.category) }, include: ticketInclude }));
+    });
   }
-
-  listMyTickets(user: UserRecord): SupportTicketDto[] {
-    return this.db.supportTickets
-      .filter((t) => t.userId === user.id)
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-      .map((t) => this.db.toSupportTicketDto(t));
+  async listMyTickets(user: UserDto) {
+    await this.store.refreshExpired();
+    return (await this.store.db.supportTicket.findMany({ where: { userId: user.id }, include: ticketInclude, orderBy: { createdAt: 'desc' } })).map(ticketDto);
   }
 }

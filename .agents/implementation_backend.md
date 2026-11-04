@@ -214,7 +214,7 @@ Popular o SQLite (`npx.cmd prisma db seed`) com as mesmas contas e senhas (`1234
 
 ## 5. Critérios de Conclusão do Plano Backend
 
-- [ ] Nenhum arquivo fora de `/backend` foi modificado.
-- [ ] `npx.cmd prisma migrate dev` e `npx.cmd prisma db seed` criam e populam o SQLite local sem erros.
-- [ ] Todos os 35 endpoints respeitam 100% os tipos de `api.contracts.ts`.
-- [ ] `npm.cmd run build` e testes automatizados passam sem falhas.
+- [x] Código de backend restrito a `/backend`, com frontend preservado. Exceções documentais solicitadas: status do projeto e checklists de `.agents/`.
+- [x] `npx.cmd prisma migrate dev` e `npx.cmd prisma db seed` criam e populam o SQLite local sem erros.
+- [x] Todos os 35 endpoints respeitam 100% os tipos de `api.contracts.ts`.
+- [x] `npm.cmd run build` e testes automatizados passam sem falhas.

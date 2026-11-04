@@ -1,58 +1,13 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import {
-  LocationDetailDto,
-  LocationSummaryDto,
-  LockerAvailabilityDto,
-  LockerDto,
-  LockerSize,
-  RentalPeriod,
-} from '../common/contracts/api.contracts';
-import { Public } from '../common/auth/mock-auth.guard';
+import { UserDto } from '../common/contracts/api.contracts';
+import { CurrentUser, Public } from '../common/auth/auth.guard';
+import { AvailabilityQuery, LocationQuery } from '../common/dto/requests.dto';
 import { LocationsService } from './locations.service';
-
-@Controller()
+@Public() @Controller()
 export class LocationsController {
-  constructor(private readonly locationsService: LocationsService) {}
-
-  /** GET /api/locations?campus&search&size&period&maxPriceCents&onlyAvailable */
-  @Public()
-  @Get('locations')
-  list(
-    @Query('campus') campus?: string,
-    @Query('search') search?: string,
-    @Query('size') size?: LockerSize,
-    @Query('period') period?: RentalPeriod,
-    @Query('maxPriceCents') maxPriceCents?: string,
-    @Query('onlyAvailable') onlyAvailable?: string,
-  ): LocationSummaryDto[] {
-    return this.locationsService.findPublicLocations({
-      campus: campus || undefined,
-      search: search || undefined,
-      size: size || undefined,
-      period: period || undefined,
-      maxPriceCents: maxPriceCents ? Number(maxPriceCents) : undefined,
-      onlyAvailable: onlyAvailable === 'true',
-    });
-  }
-
-  /** GET /api/locations/:id */
-  @Public()
-  @Get('locations/:id')
-  detail(@Param('id') id: string): LocationDetailDto {
-    return this.locationsService.findPublicLocationById(id);
-  }
-
-  /** GET /api/locations/:id/lockers */
-  @Public()
-  @Get('locations/:id/lockers')
-  lockers(@Param('id') id: string): LockerDto[] {
-    return this.locationsService.listLocationLockers(id);
-  }
-
-  /** GET /api/lockers/:id/availability?period */
-  @Public()
-  @Get('lockers/:id/availability')
-  availability(@Param('id') id: string, @Query('period') period?: RentalPeriod): LockerAvailabilityDto {
-    return this.locationsService.checkLockerAvailability(id, period || 'DAILY');
-  }
+  constructor(private readonly locations: LocationsService) {}
+  @Get('locations') list(@Query() query: LocationQuery) { return this.locations.findPublicLocations(query); }
+  @Get('locations/:id') detail(@Param('id') id: string, @CurrentUser() user?: UserDto) { return this.locations.findPublicLocationById(id, user); }
+  @Get('locations/:id/lockers') lockers(@Param('id') id: string, @CurrentUser() user?: UserDto) { return this.locations.listLocationLockers(id, user); }
+  @Get('lockers/:id/availability') availability(@Param('id') id: string, @Query() query: AvailabilityQuery) { return this.locations.checkLockerAvailability(id, query.period); }
 }

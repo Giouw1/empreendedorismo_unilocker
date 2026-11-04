@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+
 import {
   AccessAction,
   AccessEventDto,
@@ -22,14 +22,13 @@ import {
   TicketStatus,
   UserDto,
   UserRole,
-} from '../contracts/api.contracts';
+} from '../src/common/contracts/api.contracts';
 
 /**
  * ============================================================================
- * MockDbService — Armazenamento em memória do Plano 1 (MVP Pitch).
+ * Cenários UFRJ do Plano 1, preservados como fixtures exclusivas do seed.
  * ============================================================================
- * Mantém o estado da aplicação em memória para demonstração funcional imediata.
- * TODO [PLANO-BACKEND]: substituir por PrismaService + SQLite (`prisma/dev.db`).
+ * O servidor não usa estes arrays: toda persistência operacional utiliza Prisma.
  * ============================================================================
  */
 
@@ -145,8 +144,8 @@ export const LOCKER_HOLDING_STATUSES: ReservationStatus[] = [
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
 
-@Injectable()
-export class MockDbService {
+
+export class DemoFixtures {
   users: UserRecord[] = [];
   partners: PartnerRecord[] = [];
   locations: LocationRecord[] = [];
@@ -160,204 +159,6 @@ export class MockDbService {
 
   constructor() {
     this.seed();
-  }
-
-  nextId(prefix: string): string {
-    this.sequence += 1;
-    return `${prefix}-${this.sequence}`;
-  }
-
-  now(): string {
-    return new Date().toISOString();
-  }
-
-  findUserById(id: string) {
-    return this.users.find((u) => u.id === id);
-  }
-
-  findUserByEmail(email: string) {
-    return this.users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-  }
-
-  findPartnerByUserId(userId: string) {
-    return this.partners.find((p) => p.userId === userId);
-  }
-
-  findPartnerById(id: string) {
-    return this.partners.find((p) => p.id === id);
-  }
-
-  findLocationById(id: string) {
-    return this.locations.find((l) => l.id === id);
-  }
-
-  findLockerById(id: string) {
-    return this.lockers.find((l) => l.id === id);
-  }
-
-  findReservationById(id: string) {
-    return this.reservations.find((r) => r.id === id);
-  }
-
-  lockersOf(locationId: string) {
-    return this.lockers.filter((l) => l.locationId === locationId);
-  }
-
-  pricingOf(locationId: string) {
-    return this.pricingPlans.filter((p) => p.locationId === locationId);
-  }
-
-  priceFor(locationId: string, size: LockerSize, period: RentalPeriod) {
-    return this.pricingPlans.find(
-      (p) => p.locationId === locationId && p.size === size && p.period === period,
-    );
-  }
-
-  toUserDto(user: UserRecord): UserDto {
-    const partner = this.findPartnerByUserId(user.id);
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      universityAffiliation: user.universityAffiliation,
-      roles: [...user.roles],
-      partnerId: partner?.id ?? null,
-      partnerStatus: partner?.status ?? null,
-      createdAt: user.createdAt,
-    };
-  }
-
-  toPartnerDto(partner: PartnerRecord): PartnerDto {
-    return { ...partner };
-  }
-
-  toLockerDto(locker: LockerRecord): LockerDto {
-    return { ...locker };
-  }
-
-  toPricingPlanDto(plan: PricingPlanRecord): PricingPlanDto {
-    return { ...plan };
-  }
-
-  toLocationSummaryDto(location: LocationRecord): LocationSummaryDto {
-    const partner = this.findPartnerById(location.partnerId);
-    const lockers = this.lockersOf(location.id);
-    const dailyPrices = this.pricingOf(location.id)
-      .filter((p) => p.period === 'DAILY')
-      .map((p) => p.priceCents);
-
-    return {
-      id: location.id,
-      partnerId: location.partnerId,
-      partnerName: partner?.organizationName ?? '—',
-      name: location.name,
-      campus: location.campus,
-      building: location.building,
-      block: location.block,
-      floor: location.floor,
-      reference: location.reference,
-      latitude: location.latitude,
-      longitude: location.longitude,
-      openingHours: location.openingHours,
-      photoUrls: [...location.photoUrls],
-      availableCount: lockers.filter((l) => l.status === 'AVAILABLE').length,
-      startingDailyPriceCents: dailyPrices.length ? Math.min(...dailyPrices) : 0,
-      status: location.status,
-    };
-  }
-
-  toLocationDetailDto(location: LocationRecord, includeLockers = false): LocationDetailDto {
-    const lockers = this.lockersOf(location.id);
-    const availableBySize: Record<LockerSize, number> = { SMALL: 0, MEDIUM: 0, LARGE: 0 };
-    lockers
-      .filter((l) => l.status === 'AVAILABLE')
-      .forEach((l) => (availableBySize[l.size] += 1));
-
-    return {
-      ...this.toLocationSummaryDto(location),
-      roomOrCorridor: location.roomOrCorridor,
-      accessInstructions: location.accessInstructions,
-      usageRules: location.usageRules,
-      pricingPlans: this.pricingOf(location.id).map((p) => this.toPricingPlanDto(p)),
-      availableBySize,
-      ...(includeLockers ? { lockers: lockers.map((l) => this.toLockerDto(l)) } : {}),
-    };
-  }
-
-  toReservationDto(reservation: ReservationRecord): ReservationDto {
-    const location = this.findLocationById(reservation.locationId);
-    const locker = this.findLockerById(reservation.lockerId);
-    const user = this.findUserById(reservation.userId);
-    return {
-      id: reservation.id,
-      userId: reservation.userId,
-      userName: user?.name,
-      locationId: reservation.locationId,
-      locationName: location?.name ?? '—',
-      buildingSummary: location
-        ? `${location.campus} • ${location.building} • ${location.block} • ${location.floor}`
-        : '—',
-      accessInstructions: location?.accessInstructions ?? '',
-      lockerId: reservation.lockerId,
-      lockerCode: locker?.code ?? '—',
-      size: reservation.size,
-      period: reservation.period,
-      startTime: reservation.startTime,
-      endTime: reservation.endTime,
-      status: reservation.status,
-      totalPriceCents: reservation.totalPriceCents,
-      createdAt: reservation.createdAt,
-    };
-  }
-
-  toAccessEventDto(event: AccessEventRecord): AccessEventDto {
-    return {
-      id: event.id,
-      reservationId: event.reservationId,
-      lockerId: event.lockerId,
-      lockerCode: this.findLockerById(event.lockerId)?.code ?? '—',
-      action: event.action,
-      result: event.result,
-      message: event.message,
-      createdAt: event.createdAt,
-    };
-  }
-
-  toSupportTicketDto(ticket: SupportTicketRecord): SupportTicketDto {
-    const reservation = ticket.reservationId
-      ? this.findReservationById(ticket.reservationId)
-      : undefined;
-    const locker = reservation ? this.findLockerById(reservation.lockerId) : undefined;
-    return {
-      id: ticket.id,
-      userId: ticket.userId,
-      userName: this.findUserById(ticket.userId)?.name ?? '—',
-      reservationId: ticket.reservationId ?? null,
-      lockerCode: locker?.code ?? null,
-      category: ticket.category,
-      priority: ticket.priority,
-      description: ticket.description,
-      status: ticket.status,
-      adminNotes: ticket.adminNotes ?? null,
-      createdAt: ticket.createdAt,
-      updatedAt: ticket.updatedAt,
-    };
-  }
-
-  toRevenueEntryDto(reservation: ReservationRecord): PartnerRevenueEntryDto {
-    const location = this.findLocationById(reservation.locationId);
-    const locker = this.findLockerById(reservation.lockerId);
-    const fee = Math.round(reservation.totalPriceCents * PLATFORM_FEE_RATE);
-    return {
-      reservationId: reservation.id,
-      locationName: location?.name ?? '—',
-      lockerCode: locker?.code ?? '—',
-      period: reservation.period,
-      grossAmountCents: reservation.totalPriceCents,
-      platformFeeCents: fee,
-      partnerNetCents: reservation.totalPriceCents - fee,
-      createdAt: reservation.createdAt,
-    };
   }
 
   private seed() {

@@ -1,0 +1,145 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                    String          @id @default(uuid())
+  name                  String
+  email                 String          @unique
+  passwordHash          String
+  universityAffiliation String
+  rolesJson             String          @default("[\"USER\"]")
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  partner               Partner?
+  reservations          Reservation[]
+  accessEvents          AccessEvent[]
+  supportTickets        SupportTicket[]
+}
+
+model Partner {
+  id               String     @id @default(uuid())
+  userId           String     @unique
+  organizationName String
+  organizationType String
+  responsibleName  String
+  contactPhone     String
+  status           String     @default("PENDING") // PENDING | APPROVED | REJECTED
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  user             User       @relation(fields: [userId], references: [id])
+  locations        Location[]
+}
+
+model Location {
+  id                 String        @id @default(uuid())
+  partnerId          String
+  name               String
+  campus             String
+  building           String
+  block              String
+  floor              String
+  roomOrCorridor     String
+  reference          String
+  latitude           Float
+  longitude          Float
+  openingHours       String
+  accessInstructions String
+  usageRules         String
+  photoUrlsJson      String        @default("[]")
+  status             String        @default("PENDING_APPROVAL") // DRAFT | PENDING_APPROVAL | ACTIVE | INACTIVE | REJECTED
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  partner            Partner       @relation(fields: [partnerId], references: [id])
+  lockers            Locker[]
+  pricingPlans       PricingPlan[]
+  reservations       Reservation[]
+}
+
+model Locker {
+  id           String        @id @default(uuid())
+  locationId   String
+  code         String
+  size         String        // SMALL | MEDIUM | LARGE
+  status       String        @default("AVAILABLE") // AVAILABLE | OCCUPIED | MAINTENANCE | BLOCKED
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  location     Location      @relation(fields: [locationId], references: [id])
+  reservations Reservation[]
+  accessEvents AccessEvent[]
+
+  @@unique([locationId, code])
+}
+
+model PricingPlan {
+  id         String   @id @default(uuid())
+  locationId String
+  size       String   // SMALL | MEDIUM | LARGE
+  period     String   // DAILY | WEEKLY | MONTHLY
+  priceCents Int
+
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([locationId, size, period])
+}
+
+model Reservation {
+  id              String          @id @default(uuid())
+  userId          String
+  locationId      String
+  lockerId        String
+  size            String
+  period          String
+  startTime       DateTime
+  endTime         DateTime
+  status          String          @default("Active") // Active | Completed | Cancelled | Expired | Incident
+  totalPriceCents Int
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  user            User            @relation(fields: [userId], references: [id])
+  location        Location        @relation(fields: [locationId], references: [id])
+  locker          Locker          @relation(fields: [lockerId], references: [id])
+  accessEvents    AccessEvent[]
+  supportTickets  SupportTicket[]
+}
+
+model AccessEvent {
+  id            String      @id @default(uuid())
+  reservationId String
+  lockerId      String
+  userId        String
+  action        String      // UNLOCK_REQUEST | EMERGENCY_UNLOCK
+  result        String      // CONFIRMED | UNAUTHORIZED | LOCKER_MAINTENANCE
+  message       String
+  createdAt     DateTime    @default(now())
+
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+  locker        Locker      @relation(fields: [lockerId], references: [id])
+  user          User        @relation(fields: [userId], references: [id])
+}
+
+model SupportTicket {
+  id            String       @id @default(uuid())
+  userId        String
+  reservationId String?
+  category      String
+  priority      String       @default("MEDIUM") // LOW | MEDIUM | HIGH
+  description   String
+  status        String       @default("OPEN")   // OPEN | IN_PROGRESS | RESOLVED | CLOSED
+  adminNotes    String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  user          User         @relation(fields: [userId], references: [id])
+  reservation   Reservation? @relation(fields: [reservationId], references: [id])
+}

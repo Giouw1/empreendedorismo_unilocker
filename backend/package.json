@@ -1,21 +1,32 @@
 {
   "name": "unilocker-backend",
   "version": "0.1.0",
-  "description": "UniLocker UFRJ — API NestJS (Plano 1: endpoints + stubs em memória)",
+  "description": "UniLocker UFRJ — API local NestJS, Prisma e SQLite",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
     "start": "nest start",
     "start:dev": "nest start --watch",
-    "start:prod": "node dist/main"
+    "start:prod": "node dist/main",
+    "prisma:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "prisma db seed",
+    "test": "node --test -r ts-node/register test/domain.spec.ts test/mvp-flow.e2e-spec.ts",
+    "test:browser": "node test/browser-smoke.cjs"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "@nestjs/jwt": "^11.0.0",
+    "@prisma/client": "6.19.0",
+    "bcrypt": "^6.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "dotenv": "^16.4.7"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",
@@ -24,6 +35,9 @@
     "@types/node": "^22.10.0",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "@types/bcrypt": "^6.0.0",
+    "prisma": "6.19.0",
+    "playwright": "^1.56.0"
   }
 }

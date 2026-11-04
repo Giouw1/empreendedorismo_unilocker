@@ -3,7 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AccessModule } from './access/access.module';
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
-import { MockAuthGuard } from './common/auth/mock-auth.guard';
+import { AuthGuard } from './common/auth/auth.guard';
 import { CommonModule } from './common/common.module';
 import { LocationsModule } from './locations/locations.module';
 import { PartnersModule } from './partners/partners.module';
@@ -23,6 +23,6 @@ import { UsersModule } from './users/users.module';
     SupportModule,
     AdminModule,
   ],
-  providers: [{ provide: APP_GUARD, useClass: MockAuthGuard }],
+  providers: [{ provide: APP_GUARD, useClass: AuthGuard }],
 })
 export class AppModule {}

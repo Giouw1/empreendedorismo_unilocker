@@ -1,180 +1,80 @@
-import {
-  BadRequestException,
-  ConflictException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import {
-  CompleteReservationRequest,
-  CreateReservationRequest,
-  ExtendReservationRequest,
-  MyReservationsResponse,
-  ReservationDto,
-  ReservationStatus,
-} from '../common/contracts/api.contracts';
-import {
-  LOCKER_HOLDING_STATUSES,
-  MockDbService,
-  PERIOD_DURATION_MS,
-  ReservationRecord,
-  UserRecord,
-} from '../common/mock/mock-db.service';
-
-const ACTIVE_LIST_STATUSES: ReservationStatus[] = ['Active', 'Expired', 'Incident'];
-
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { CompleteReservationRequest, CreateReservationRequest, ExtendReservationRequest, MyReservationsResponse, UserDto } from '../common/contracts/api.contracts';
+import { Store } from '../common/store.service';
+import { reservationDto, reservationInclude } from '../common/mappers';
+import { addPrice, assertOngoing, LOCKER_HOLDING_STATUSES, PERIOD_DURATION_MS } from '../common/domain';
 @Injectable()
 export class ReservationsService {
-  constructor(private readonly db: MockDbService) {}
-
-  /**
-   * Contrata e ativa imediatamente o aluguel para o MVP (sem gateway externo).
-   *
-   * TODO [PLANO-BACKEND]: executar dentro de `prisma.$transaction` para evitar
-   * dupla alocação simultânea do mesmo compartimento.
-   */
-  createReservation(user: UserRecord, dto: CreateReservationRequest): ReservationDto {
-    if (!dto?.locationId || !dto?.size || !dto?.period) {
-      throw new BadRequestException('Informe ponto, tamanho e período.');
-    }
-    const location = this.db.findLocationById(dto.locationId);
-    if (!location || location.status !== 'ACTIVE') {
-      throw new NotFoundException('Ponto indisponível para reservas.');
-    }
-    const plan = this.db.priceFor(location.id, dto.size, dto.period);
-    if (!plan) {
-      throw new BadRequestException('Não há preço configurado para este tamanho e período.');
-    }
-
-    const isFree = (lockerId: string) =>
-      !this.db.reservations.some(
-        (r) => r.lockerId === lockerId && LOCKER_HOLDING_STATUSES.includes(r.status),
-      );
-
-    const locker = dto.lockerId
-      ? this.db.findLockerById(dto.lockerId)
-      : this.db
-          .lockersOf(location.id)
-          .find((l) => l.size === dto.size && l.status === 'AVAILABLE' && isFree(l.id));
-
-    if (!locker || locker.locationId !== location.id || locker.size !== dto.size) {
-      throw new ConflictException('Nenhum compartimento compatível disponível no momento.');
-    }
-    if (locker.status !== 'AVAILABLE' || !isFree(locker.id)) {
-      throw new ConflictException('Este compartimento já está ocupado. Escolha outro.');
-    }
-
-    const start = new Date();
-    const reservation: ReservationRecord = {
-      id: this.db.nextId('res'),
-      userId: user.id,
-      locationId: location.id,
-      lockerId: locker.id,
-      size: dto.size,
-      period: dto.period,
-      startTime: start.toISOString(),
-      endTime: new Date(start.getTime() + PERIOD_DURATION_MS[dto.period]).toISOString(),
-      status: 'Active',
-      totalPriceCents: plan.priceCents,
-      createdAt: start.toISOString(),
-    };
-    locker.status = 'OCCUPIED';
-    this.db.reservations.push(reservation);
-    return this.db.toReservationDto(reservation);
+  constructor(private readonly store: Store) {}
+  async createReservation(user: UserDto, dto: CreateReservationRequest) {
+    await this.store.refreshExpired();
+    return this.store.db.atomic(async tx => {
+      const location = await tx.location.findUnique({ where: { id: dto.locationId }, include: { partner: true } });
+      if (!location || location.status !== 'ACTIVE' || location.partner.status !== 'APPROVED') throw new NotFoundException('Ponto indisponível para reservas.');
+      const plan = await tx.pricingPlan.findUnique({ where: { locationId_size_period: { locationId: location.id, size: dto.size, period: dto.period } } });
+      if (!plan) throw new BadRequestException('Não há preço configurado para este tamanho e período.');
+      const locker = await tx.locker.findFirst({ where: {
+        ...(dto.lockerId ? { id: dto.lockerId } : {}), locationId: location.id, size: dto.size, status: 'AVAILABLE',
+        reservations: { none: { status: { in: LOCKER_HOLDING_STATUSES } } },
+      }, orderBy: { code: 'asc' } });
+      if (!locker) throw new ConflictException('Nenhum compartimento compatível disponível no momento.');
+      // Compare-and-set dentro da transação impede dois pedidos de ocuparem o mesmo locker.
+      const claimed = await tx.locker.updateMany({ where: { id: locker.id, status: 'AVAILABLE' }, data: { status: 'OCCUPIED' } });
+      if (claimed.count !== 1) throw new ConflictException('Este compartimento já está ocupado.');
+      const startTime = this.store.clock.now();
+      const r = await tx.reservation.create({ data: { userId: user.id, locationId: location.id, lockerId: locker.id,
+        size: dto.size, period: dto.period, startTime, endTime: new Date(startTime.getTime() + PERIOD_DURATION_MS[dto.period]),
+        status: 'Active', totalPriceCents: plan.priceCents }, include: reservationInclude });
+      return reservationDto(r);
+    });
   }
-
-  listUserReservations(user: UserRecord): MyReservationsResponse {
-    this.syncExpiredReservations();
-    const mine = this.db.reservations
-      .filter((r) => r.userId === user.id)
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-      .map((r) => this.db.toReservationDto(r));
-    return {
-      active: mine.filter((r) => ACTIVE_LIST_STATUSES.includes(r.status)),
-      history: mine.filter((r) => !ACTIVE_LIST_STATUSES.includes(r.status)),
-    };
+  async listUserReservations(user: UserDto): Promise<MyReservationsResponse> {
+    await this.store.refreshExpired();
+    const rows = await this.store.db.reservation.findMany({ where: { userId: user.id }, include: reservationInclude, orderBy: { createdAt: 'desc' } });
+    return { active: rows.filter(r => LOCKER_HOLDING_STATUSES.includes(r.status as 'Active')).map(reservationDto),
+      history: rows.filter(r => !LOCKER_HOLDING_STATUSES.includes(r.status as 'Active')).map(reservationDto) };
   }
-
-  getReservationById(user: UserRecord, id: string): ReservationDto {
-    this.syncExpiredReservations();
-    return this.db.toReservationDto(this.getAuthorizedReservation(user, id, true));
+  async getReservationById(user: UserDto, id: string) {
+    await this.store.refreshExpired();
+    return reservationDto(await this.store.reservation(this.store.db, user, id, true));
   }
-
-  extendReservation(user: UserRecord, id: string, dto: ExtendReservationRequest): ReservationDto {
-    const reservation = this.getAuthorizedReservation(user, id);
-    if (reservation.status !== 'Active') {
-      throw new BadRequestException('Apenas aluguéis ativos podem ser prorrogados.');
-    }
-    const additional = dto?.additionalPeriod;
-    const plan = additional
-      ? this.db.priceFor(reservation.locationId, reservation.size, additional)
-      : undefined;
-    if (!additional || !plan) {
-      throw new BadRequestException('Período de prorrogação inválido.');
-    }
-
-    reservation.endTime = new Date(
-      new Date(reservation.endTime).getTime() + PERIOD_DURATION_MS[additional],
-    ).toISOString();
-    reservation.totalPriceCents += plan.priceCents;
-    return this.db.toReservationDto(reservation);
+  async extendReservation(user: UserDto, id: string, dto: ExtendReservationRequest) {
+    await this.store.refreshExpired();
+    return this.store.db.atomic(async tx => {
+      const r = await this.store.reservation(tx, user, id);
+      const plan = await tx.pricingPlan.findUnique({ where: { locationId_size_period: { locationId: r.locationId, size: r.size, period: dto.additionalPeriod } } });
+      if (!plan) throw new BadRequestException('Período de prorrogação não configurado.');
+      assertOngoing(r, this.store.clock.now());
+      const updated = await tx.reservation.update({ where: { id }, data: { endTime: new Date(r.endTime.getTime() + PERIOD_DURATION_MS[dto.additionalPeriod]),
+        totalPriceCents: addPrice(r.totalPriceCents, plan.priceCents) }, include: reservationInclude });
+      return reservationDto(updated);
+    });
   }
-
-  completeReservation(
-    user: UserRecord,
-    id: string,
-    dto: CompleteReservationRequest,
-  ): ReservationDto {
-    const reservation = this.getAuthorizedReservation(user, id);
-    if (!dto?.confirmedEmptyAndClosed) {
-      throw new BadRequestException(
-        'Confirme que retirou seus pertences e fechou a porta do compartimento.',
-      );
-    }
-    if (reservation.status !== 'Active') {
-      throw new BadRequestException('Apenas aluguéis ativos podem ser finalizados pelo aplicativo.');
-    }
-    reservation.status = 'Completed';
-    reservation.endTime = new Date().toISOString();
-    const locker = this.db.findLockerById(reservation.lockerId);
-    if (locker) locker.status = 'AVAILABLE';
-    return this.db.toReservationDto(reservation);
+  async completeReservation(user: UserDto, id: string, dto: CompleteReservationRequest) {
+    if (dto.confirmedEmptyAndClosed !== true) throw new BadRequestException('Confirme que retirou seus pertences e fechou o compartimento.');
+    await this.store.refreshExpired();
+    return this.store.db.atomic(async tx => {
+      const r = await this.store.reservation(tx, user, id);
+      if (r.status === 'Completed') return reservationDto(r);
+      const now = this.store.clock.now();
+      assertOngoing(r, now);
+      const completed = await tx.reservation.update({ where: { id }, data: { status: 'Completed', endTime: now }, include: reservationInclude });
+      await tx.locker.update({ where: { id: r.lockerId }, data: { status: 'AVAILABLE' } });
+      return reservationDto(completed);
+    });
   }
-
-  cancelPendingReservation(user: UserRecord, id: string): ReservationDto {
-    const reservation = this.getAuthorizedReservation(user, id);
-    if (reservation.status !== 'Active') {
-      throw new BadRequestException('Esta reserva não pode mais ser cancelada.');
-    }
-    reservation.status = 'Cancelled';
-    const locker = this.db.findLockerById(reservation.lockerId);
-    if (locker && locker.status === 'OCCUPIED') locker.status = 'AVAILABLE';
-    return this.db.toReservationDto(reservation);
-  }
-
-  getAuthorizedReservation(
-    user: UserRecord,
-    id: string,
-    allowPartnerRead = false,
-  ): ReservationRecord {
-    const reservation = this.db.findReservationById(id);
-    if (!reservation) throw new NotFoundException('Reserva não encontrada.');
-    if (reservation.userId === user.id || user.roles.includes('ADMIN')) return reservation;
-    if (allowPartnerRead) {
-      const partner = this.db.findPartnerByUserId(user.id);
-      const location = this.db.findLocationById(reservation.locationId);
-      if (partner && location?.partnerId === partner.id) return reservation;
-    }
-    throw new ForbiddenException('Você não tem acesso a esta reserva.');
-  }
-
-  /**
-   * Regra crítica: aluguel ativo vencido vira `Expired` SEM liberar o locker automaticamente.
-   */
-  syncExpiredReservations() {
-    const now = Date.now();
-    this.db.reservations
-      .filter((r) => r.status === 'Active' && new Date(r.endTime).getTime() < now)
-      .forEach((r) => (r.status = 'Expired'));
+  async cancelPendingReservation(user: UserDto, id: string) {
+    await this.store.refreshExpired();
+    return this.store.db.atomic(async tx => {
+      const r = await this.store.reservation(tx, user, id);
+      if (r.status === 'Cancelled') return reservationDto(r);
+      if (await tx.accessEvent.count({ where: { reservationId: id, result: 'CONFIRMED' } })) {
+        throw new ConflictException('Após a primeira abertura, finalize confirmando retirada e fechamento ou solicite suporte.');
+      }
+      assertOngoing(r, this.store.clock.now());
+      const cancelled = await tx.reservation.update({ where: { id }, data: { status: 'Cancelled' }, include: reservationInclude });
+      await tx.locker.update({ where: { id: r.lockerId }, data: { status: 'AVAILABLE' } });
+      return reservationDto(cancelled);
+    });
   }
 }

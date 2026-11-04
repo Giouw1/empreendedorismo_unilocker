@@ -1,28 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { UpdateProfileRequest, UserDto } from '../common/contracts/api.contracts';
-import { MockDbService, UserRecord } from '../common/mock/mock-db.service';
-
+import { PrismaService } from '../common/prisma/prisma.service';
+import { userDto } from '../common/mappers';
 @Injectable()
 export class UsersService {
-  constructor(private readonly db: MockDbService) {}
-
-  /**
-   * Retorna o perfil do usuário logado com vínculo de parceiro (se houver).
-   *
-   * TODO [PLANO-BACKEND]: `prisma.user.findUnique({ include: { partner: true } })`.
-   */
-  getProfile(user: UserRecord): UserDto {
-    return this.db.toUserDto(user);
-  }
-
-  /**
-   * Atualiza nome e vínculo universitário.
-   *
-   * TODO [PLANO-BACKEND]: validar campos (não vazios, tamanho máximo) e persistir via Prisma.
-   */
-  updateProfile(user: UserRecord, dto: UpdateProfileRequest): UserDto {
-    if (dto?.name?.trim()) user.name = dto.name.trim();
-    if (dto?.universityAffiliation?.trim()) user.universityAffiliation = dto.universityAffiliation.trim();
-    return this.db.toUserDto(user);
+  constructor(private readonly db: PrismaService) {}
+  getProfile(user: UserDto): UserDto { return user; }
+  async updateProfile(user: UserDto, dto: UpdateProfileRequest): Promise<UserDto> {
+    return userDto(await this.db.user.update({ where: { id: user.id }, data: dto, include: { partner: true } }));
   }
 }
