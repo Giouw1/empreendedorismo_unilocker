@@ -9,7 +9,6 @@ import {
   LogOut,
   Users,
 } from 'lucide-react';
-import { DemoPersonaSwitcher } from '../components/DemoPersonaSwitcher';
 import { useAuth } from '../contexts/AuthContext';
 
 const navItems = [
@@ -48,7 +47,6 @@ export default function AdminWebLayout() {
           ))}
         </nav>
         <div className="space-y-3 border-t border-slate-800 p-4">
-          <DemoPersonaSwitcher variant="dark" />
           <Link to="/app/explore" className="block text-xs text-slate-400 hover:text-white">
             Ir para o app do usuário →
           </Link>

@@ -1,4 +1,4 @@
-import { AccessEvent, Location, Locker, Partner, PricingPlan, Prisma, SupportTicket, User } from '@prisma/client';
+import { Location, Locker, Partner, PricingPlan, Prisma, SupportTicket, User } from '@prisma/client';
 import * as C from './contracts/api.contracts';
 import { splitRevenue } from './domain';
 
@@ -38,10 +38,6 @@ export function reservationDto(r: ReservationRow): C.ReservationDto {
     accessInstructions: r.location.accessInstructions, lockerId: r.lockerId, lockerCode: r.locker.code, size: r.size as C.LockerSize,
     period: r.period as C.RentalPeriod, startTime: r.startTime.toISOString(), endTime: r.endTime.toISOString(), status: r.status as C.ReservationStatus,
     totalPriceCents: r.totalPriceCents, createdAt: r.createdAt.toISOString() };
-}
-export function accessDto(e: AccessEvent & { locker: Locker }): C.AccessEventDto {
-  return { id: e.id, reservationId: e.reservationId, lockerId: e.lockerId, lockerCode: e.locker.code,
-    action: e.action as C.AccessAction, result: e.result as C.AccessResult, message: e.message, createdAt: e.createdAt.toISOString() };
 }
 export function ticketDto(t: TicketRow): C.SupportTicketDto {
   return { id: t.id, userId: t.userId, userName: t.user.name, reservationId: t.reservationId, lockerCode: t.reservation?.locker.code ?? null,

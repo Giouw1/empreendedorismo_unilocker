@@ -59,3 +59,26 @@
 ## Fase 3 — Homologação Final para o Pitch ✅
 - [x] Conectar Frontend (Fase 2A) e Backend SQLite (Fase 2B) e validar roteiro completo de demonstração (*Joaquim*, *Cintra*, *Prof. Guilherme* e *Admin*) via `npm run test:browser` (0 falhas).
 - [x] Roteiro executivo completo em [`docs/ROTEIRO_PITCH.md`](../docs/ROTEIRO_PITCH.md) e Guia do Apresentador in-app no seletor de personas.
+
+---
+
+## Fase 4 — Execução da ADR 0001: Limpa de Mecanismos Mock ✅
+- [x] **Remoção de Hardware Eletrônico:** Exclusão do `AccessModule`, `AccessController`, `AccessService`, rotas `/api/reservations/:id/unlock` e `/access-events`, componente `AccessButton` e `access.service.ts`.
+- [x] **Persistência de Candidaturas de Parceiros:** Garantida e verificada a gravação de candidaturas no SQLite via `POST /api/partners/applications` mantendo o status `PENDING` para processo seletivo externo.
+- [x] **Limpeza de Textos de Pagamento Simulado:** Ajuste do botão de checkout para "Confirmar Reserva" e destaque de que a cobrança e a entrega de chave/acesso ocorrem diretamente com o parceiro no local.
+- [x] **Atualização e Validação dos Testes:** Suíte de testes unitários e E2E ajustada para os 33 endpoints oficiais e teste de fumaça automatizado do navegador (Playwright) 100% verde com 0 erros.
+
+---
+
+## Fase 5 — Execução da ADR 0002: Redirecionamento e Logout de Parceiro ✅
+- [x] **Redirecionamento no Login:** Função `homePathFor` direciona usuários com perfil `PARTNER` diretamente para `/partner/dashboard` no login e no seletor de personas.
+- [x] **Botão de Logout Dedicado:** Cabeçalho de `PartnerLayout` com botão "Sair" funcional conectado ao `logout()` e redirecionando para `/login`.
+- [x] **Flexibilidade Preservada:** Sem restrições excessivas ao parceiro para visualização de telas comuns, mantendo intactas as proteções de estudante para parceiro e não-admin para admin.
+- [x] **Validação nos Testes:** Teste Playwright atualizado com transição direta do Guilherme para o painel de parceiro (0 falhas).
+
+---
+
+## Fase 6 — Execução da ADR 0003: Simplificação da Estrutura de Pitch ✅
+- [x] **Logins de 1 Clique:** Botões das 4 personas integrados diretamente na tela de login (`/login`) para autenticação e redirecionamento instantâneo.
+- [x] **Eliminação de Modais e Switchers Artificiais:** Remoção da gaveta de pitch e exclusão definitiva de `DemoPersonaSwitcher.tsx`, limpando os layouts de usuário, parceiro e administrador.
+- [x] **Roteiro e Testes Atualizados:** Documentação de pitch alinhada ao fluxo real e teste de fumaça automatizado Playwright 100% verde validando a alternância via `/login`.

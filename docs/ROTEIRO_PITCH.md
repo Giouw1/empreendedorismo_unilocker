@@ -35,21 +35,21 @@
   > *"A UniLocker resolve isso com um modelo de **Marketplace de Espaços sem CAPEX Imobiliário**. Nós não compramos imóveis e nem arcamos com reformas caras. Nós empoderamos os próprios ofertadores locais — como professores, chefias de departamento e grêmios estudantis — a monetizarem seus espaços.*
   > *A cada aluguel contratado, **90% da receita fica diretamente com o ofertador** e **10% é retido pela UniLocker** como taxa de tecnologia e governança da plataforma. O modelo incentiva o parceiro a cuidar do espaço enquanto nós garantimos a rede, o software e a segurança."*
 - **O que mostrar:**
-  - Explicar o seletor de personas no topo direito da tela, demonstrando como a plataforma atende aos diferentes papéis.
+  - Explicar que a plataforma atende perfis dedicados de estudantes, ofertadores parceiros e operação administrativa, com logins demonstrativos de 1 clique acessíveis na tela de login.
 
 ---
 
 ### Bloco 3: Persona 1 — Cintra: Aluguel Recorrente (2:00 – 3:00)
 - **Perfil:** Estudante de Engenharia que faz estágio remoto e precisa deixar o computador seguro no campus.
 - **Passos na tela:**
-  1. No seletor de personas, clique em **Cintra**.
+  1. Na tela de login (`/login`), clique no botão rápido **Cintra**.
   2. O sistema entra automaticamente na área do aluno (`/app/explore`).
   3. Destaque o **Mapa Esquemático Interativo da UFRJ** em SVG puro (100% offline), mostrando os polos do CT, Reitoria/EBA, Letras e CCMN com pins dinâmicos de vagas livres.
   4. Mostre o **Banner Flutuante** de reserva ativa na base da tela com o tempo restante ao vivo.
   5. Clique no banner ou na reserva: entra em `/app/reservations/...`.
   6. Mostre o **cronômetro regressivo com segundos ao vivo**.
-  7. Clique no botão de destravamento:
-     > *"Com apenas um toque, o aluno comanda a abertura eletrônica do armário. Vejam a animação de destravamento instantâneo e o registro de auditoria no servidor."*
+  7. Destaque o gerenciamento pelo parceiro e instruções do local:
+     > *"O aluno tem em mãos todos os detalhes do compartimento, orientações de uso e o tempo restante do aluguel. O acesso físico ao compartimento é combinado diretamente no local com o parceiro responsável, mantendo a operação simples e sem dependência de hardware proprietário no MVP."*
   8. Clique em **Como chegar** para mostrar o guia de localização indoor passo a passo (Prédio, Bloco, Andar, Sala e Ponto de Referência).
 
 ---
@@ -57,13 +57,13 @@
 ### Bloco 4: Persona 2 — Joaquim: Aluguel Pontual (3:00 – 4:00)
 - **Perfil:** Estudante de Letras que veio para um evento/festa universitária e só precisa de 24h para guardar a mochila.
 - **Passos na tela:**
-  1. No seletor de personas, selecione **Joaquim**.
+  1. Vá até a tela de login (`/login`) e selecione o botão rápido **Joaquim**.
   2. Vá em **Explorar** (`/app/explore`) e selecione o ponto **Ateliê Aberto EBA**.
   3. Veja a galeria, regras de uso e a seleção de tamanho (Médio) e período (Diário — 24h).
   4. Clique no botão **Reservar por R$ 8,00**.
-  5. Na tela de Checkout, destaque a transparência do resumo de preços e clique em **Confirmar e Ativar Locker**.
+  5. Na tela de Checkout, destaque a transparência do resumo de preços e clique em **Confirmar Reserva**.
   6. A reserva é ativada instantaneamente sem fricção:
-     > *"O aluno não precisa de cartão físico ou fila de guichê; o locker é alocado, ele destrava no celular e, ao final do evento, finaliza o aluguel confirmando que retirou seus pertences."*
+     > *"O aluno não precisa de burocracia ou fila; o locker é alocado, o acerto e acesso são tratados diretamente com o parceiro no espaço e, ao final do evento, o aluno finaliza o aluguel no aplicativo confirmando que retirou seus pertences e desocupou o compartimento."*
   7. Demonstre a finalização com o modal de confirmação.
 
 ---
@@ -71,8 +71,8 @@
 ### Bloco 5: Persona 3 — Prof. Guilherme: Ofertador Parceiro (4:00 – 5:00)
 - **Perfil:** Professor responsável pelo Laboratório de Artes Modernas da EBA.
 - **Passos na tela:**
-  1. No seletor de personas, selecione **Prof. Guilherme**.
-  2. O sistema redireciona para o **Painel do Parceiro** (`/partner/dashboard`).
+  1. Na tela de login (`/login`), selecione o botão rápido **Prof. Guilherme**.
+  2. O sistema redireciona diretamente para o **Painel do Parceiro** (`/partner/dashboard`).
   3. Aponte para os KPIs operacionais: Total de lockers, Ocupação em tempo real e Aluguéis ativos.
   4. Clique em **Gerenciar lockers**: mostre a **grade física interativa de armários**, destacando que armários em uso por estudantes têm suas portas bloqueadas contra manutenção acidental.
   5. Acesse a aba **Financeiro** (`/partner/financial`):
@@ -84,7 +84,7 @@
 ### Bloco 6: Persona 4 — Administrador: Governança & Escala (5:00 – 6:00)
 - **Perfil:** Gestor da plataforma UniLocker.
 - **Passos na tela:**
-  1. No seletor de personas, selecione **Admin**.
+  1. Na tela de login (`/login`), selecione o botão rápido **Admin**.
   2. O sistema abre o layout corporativo com menu lateral (`/admin/dashboard`).
   3. Aponte os números executivos: GMV transacionado, comissão acumulada de 10% da UniLocker e chamados de suporte.
   4. Vá em **Curadoria de Parceiros** (`/admin/partners`): aprove uma nova solicitação (ex.: Cantina do CCMN) com 1 clique.
@@ -104,5 +104,5 @@
 ### Dicas para o Apresentador
 1. **Zero dependência de rede:** O mapa em SVG e os dados rodam 100% no servidor local. Caso o auditório fique sem Wi-Fi, tudo continua funcionando.
 2. **Senha padrão:** Todas as contas de teste usam a senha `123456`.
-3. **Seletor rápido:** Use o `DemoPersonaSwitcher` no topo da tela para trocar de usuário instantaneamente sem precisar passar pela tela de login.
+3. **Logins rápidos de 1 clique:** Use os botões das personas na tela de `/login` para transitar entre os papéis de forma instantânea e natural.
 4. **Resoluções:** O aplicativo foi otimizado tanto para proporção mobile (como no celular de um estudante) quanto para telas amplas de notebook e projetor (como no painel do administrador).

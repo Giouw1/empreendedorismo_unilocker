@@ -1,7 +1,7 @@
 import React from 'react';
 import type { RentalPeriod, LockerSize } from '../../types/api';
 import { formatCents, periodLabels, lockerSizeLabels, formatDate } from '../../utils/formatters';
-import { Calendar, ShieldCheck, Tag } from 'lucide-react';
+import { Calendar, Tag } from 'lucide-react';
 
 interface PriceSummaryProps {
   period: RentalPeriod;
@@ -41,9 +41,6 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
         <h4 className="font-semibold text-slate-800 text-sm flex items-center gap-2">
           <Tag className="w-4 h-4 text-brand-600" /> Resumo da Contratação
         </h4>
-        <span className="text-xs px-2.5 py-0.5 rounded-full font-medium bg-brand-100 text-brand-800">
-          Ativação Instantânea
-        </span>
       </div>
 
       <div className="space-y-2 text-sm">
@@ -88,13 +85,13 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
 
       <div className="pt-3 border-t border-slate-200 flex items-baseline justify-between">
         <div>
-          <span className="text-xs text-slate-500 block">Total a pagar</span>
+          <span className="text-xs text-slate-500 block">Total da contratação</span>
           <span className="text-2xl font-extrabold text-slate-900">
             {formatCents(amountCents)}
           </span>
         </div>
-        <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
-          <ShieldCheck className="w-4 h-4" /> Pagamento 100% Simulado
+        <span className="text-xs text-slate-500 font-medium">
+          Acerto direto no espaço
         </span>
       </div>
     </div>

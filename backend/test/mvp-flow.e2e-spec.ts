@@ -95,7 +95,7 @@ describe('Contrato MVP — HTTP + SQLite real', { concurrency: false }, () => {
     assert.equal((await api('/locations/loc-letras', 'GET', undefined, 'admin')).status, 200);
   });
 
-  test('ciclo completo sem pagamento: alocar, ativar, abrir, prorrogar, contabilizar e encerrar', async () => {
+  test('ciclo completo: alocar, ativar, prorrogar, contabilizar e encerrar', async () => {
     const before = (await api('/partner/financial', 'GET', undefined, 'guilherme')).body;
     const created = await reserve();
     assert.equal(created.status, 201, JSON.stringify(created.body));
@@ -105,11 +105,6 @@ describe('Contrato MVP — HTTP + SQLite real', { concurrency: false }, () => {
     assert.equal((await db.locker.findUniqueOrThrow({ where: { id: r.lockerId } })).status, 'OCCUPIED');
     const mine = await api('/reservations/me', 'GET', undefined, 'joaquim');
     assert.ok(mine.body.active.some((v: any) => v.id === r.id));
-    const opened = await api(`/reservations/${r.id}/unlock`, 'POST', undefined, 'joaquim');
-    assert.equal(opened.body.result, 'CONFIRMED'); assert.equal(opened.body.lockerCode, 'A-02');
-    assert.ok(opened.body.message.includes('simulada'));
-    assert.equal((await api(`/reservations/${r.id}/access-events`, 'GET', undefined, 'joaquim')).body.length, 1);
-    assert.equal((await api(`/reservations/${r.id}/cancel`, 'POST', undefined, 'joaquim')).status, 409);
     const extended = await api(`/reservations/${r.id}/extend`, 'POST', { additionalPeriod: 'WEEKLY' }, 'joaquim');
     assert.equal(extended.body.totalPriceCents, 3000);
     assert.equal(new Date(extended.body.endTime).getTime() - new Date(r.endTime).getTime(), 7 * 86400000);
@@ -142,12 +137,10 @@ describe('Contrato MVP — HTTP + SQLite real', { concurrency: false }, () => {
     assert.equal((await api('/partner/financial', 'GET', undefined, 'guilherme')).body.entries.some((e: any) => e.reservationId === r.id), false);
   });
 
-  test('ownership, RBAC e recusas de abertura são auditados', async () => {
+  test('ownership e RBAC são validados', async () => {
     assert.equal((await api('/admin/users', 'GET', undefined, 'cintra')).status, 403);
     assert.equal((await api('/partner/dashboard', 'GET', undefined, 'cantina')).status, 403);
     assert.equal((await api('/reservations/res-cintra-active', 'GET', undefined, 'joaquim')).status, 403);
-    assert.equal((await api('/reservations/res-cintra-active/unlock', 'POST', undefined, 'joaquim')).status, 403);
-    assert.equal(await db.accessEvent.count({ where: { userId: 'u-joaquim', result: 'UNAUTHORIZED' } }), 1);
     assert.equal((await api('/partner/lockers/lk-ct-b-01', 'PATCH', { status: 'BLOCKED' }, 'guilherme')).status, 403);
     assert.equal((await api('/support/tickets', 'POST', { reservationId: 'res-cintra-active', category: 'OTHER', description: 'Tentativa indevida' }, 'joaquim')).status, 403);
   });
@@ -157,7 +150,6 @@ describe('Contrato MVP — HTTP + SQLite real', { concurrency: false }, () => {
     const mine = await api('/reservations/me', 'GET', undefined, 'cintra');
     assert.equal(mine.body.active[0].status, 'Expired');
     assert.equal((await db.locker.findUniqueOrThrow({ where: { id: 'lk-ct-b-05' } })).status, 'OCCUPIED');
-    assert.equal((await api('/reservations/res-cintra-active/unlock', 'POST', undefined, 'cintra')).body.result, 'UNAUTHORIZED');
     assert.equal((await api('/reservations/res-cintra-active/extend', 'POST', { additionalPeriod: 'DAILY' }, 'cintra')).status, 409);
     assert.equal((await api('/reservations/res-cintra-active/complete', 'POST', { confirmedEmptyAndClosed: true }, 'cintra')).status, 409);
     const incidents = (await api('/admin/incidents?status=OPEN', 'GET', undefined, 'admin')).body;
@@ -272,11 +264,11 @@ describe('Contrato MVP — HTTP + SQLite real', { concurrency: false }, () => {
     assert.equal((await api('/users/me', 'GET', undefined, 'cintra')).body.id, 'u-cintra');
   });
 
-  test('os 35 endpoints oficiais foram exercitados com sucesso', () => {
+  test('os 33 endpoints oficiais foram exercitados com sucesso', () => {
     const expected = [
       'POST /auth/register','POST /auth/login','GET /users/me','PATCH /users/me','GET /locations','GET /locations/:id','GET /locations/:id/lockers','GET /lockers/:id/availability',
       'POST /reservations','GET /reservations/me','GET /reservations/:id','POST /reservations/:id/extend','POST /reservations/:id/complete','POST /reservations/:id/cancel',
-      'POST /reservations/:id/unlock','GET /reservations/:id/access-events','POST /partners/applications','GET /partner/dashboard','POST /partner/locations','PATCH /partner/locations/:id',
+      'POST /partners/applications','GET /partner/dashboard','POST /partner/locations','PATCH /partner/locations/:id',
       'POST /partner/locations/:id/lockers','PATCH /partner/lockers/:id','GET /partner/reservations','GET /partner/financial','POST /support/tickets','GET /support/tickets/me',
       'GET /admin/dashboard','GET /admin/users','GET /admin/partners/pending','POST /admin/partners/:id/approve','GET /admin/locations','POST /admin/locations/:id/approve','GET /admin/reservations','GET /admin/incidents','PATCH /admin/incidents/:id',
     ];

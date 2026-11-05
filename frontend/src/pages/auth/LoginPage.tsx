@@ -1,12 +1,12 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Lock } from 'lucide-react';
-import { homePathFor, useAuth } from '../../contexts/AuthContext';
+import { DEMO_PERSONAS, homePathFor, useAuth } from '../../contexts/AuthContext';
 import { useAction } from '../../hooks/useAsync';
 import { ErrorAlert, Spinner } from '../../components/ui';
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, loginAsPersona } = useAuth();
   const navigate = useNavigate();
   const { pending, error, run } = useAction();
   const [email, setEmail] = useState('cintra@poli.ufrj.br');
@@ -15,6 +15,11 @@ export default function LoginPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const user = await run(() => login({ email, password }));
+    if (user) navigate(homePathFor(user), { replace: true });
+  };
+
+  const handleQuickPersona = async (targetEmail: string) => {
+    const user = await run(() => loginAsPersona(targetEmail));
     if (user) navigate(homePathFor(user), { replace: true });
   };
 
@@ -55,6 +60,27 @@ export default function LoginPage() {
             {pending && <Spinner />} Entrar
           </button>
         </form>
+
+        {/* Acesso rápido às personas de demonstração */}
+        <div className="pt-3 border-t border-slate-200/80 space-y-2">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 text-center">
+            Acesso Rápido (Demonstração)
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {DEMO_PERSONAS.map((p) => (
+              <button
+                key={p.email}
+                type="button"
+                disabled={pending}
+                onClick={() => void handleQuickPersona(p.email)}
+                className="flex flex-col items-start p-2 rounded-xl border border-slate-200 bg-slate-50/80 hover:bg-brand-50 hover:border-brand-300 text-left transition-all active:scale-95 disabled:opacity-50"
+              >
+                <span className="text-xs font-bold text-slate-800">{p.label}</span>
+                <span className="text-[10px] text-slate-500 line-clamp-1">{p.description}</span>
+              </button>
+            ))}
+          </div>
+        </div>
 
         <p className="text-center text-xs text-slate-500">
           Ainda não tem conta?{' '}

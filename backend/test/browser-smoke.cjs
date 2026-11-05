@@ -61,37 +61,37 @@ async function main() {
     if (origin && !report.corsOrigins.includes(origin)) report.corsOrigins.push(origin);
   });
   const go = path => page.goto(`http://localhost:5173${path}`);
-  const persona = async (email, path) => {
-    await page.getByLabel('Trocar persona de demonstração').selectOption(email);
+  const persona = async (label, path) => {
+    await go('/login');
+    await page.getByRole('button', { name: new RegExp(`^${label}`) }).click();
     await page.waitForURL(`**${path}`);
   };
 
   await go('/login');
-  await page.getByRole('button', { name: 'Entrar', exact: true }).click();
+  await page.getByRole('button', { name: /^Cintra/ }).click();
   await page.waitForURL('**/app/explore');
   await page.getByRole('heading', { name: 'Explorar lockers' }).waitFor();
   await page.getByText('Laboratório de Artes Modernas — EBA', { exact: true }).waitFor();
   await screenshot(page, '01-cintra-explore');
   await go('/app/reservations/res-cintra-active');
-  await page.getByRole('button', { name: 'Abrir locker B-05' }).waitFor();
+  await page.getByRole('heading', { name: 'Acesso ao Compartimento Físico' }).waitFor();
   report.checks.push('Login Cintra, catálogo e reserva ativa do CT');
 
-  await persona('joaquim@letras.ufrj.br', '/app/explore');
+  await persona('Joaquim', '/app/explore');
   await go('/app/locations/loc-eba');
   await page.getByRole('button', { name: /^Reservar por/ }).click();
-  await page.getByRole('button', { name: 'Confirmar e ativar locker' }).click();
+  await page.getByRole('button', { name: 'Confirmar Reserva' }).click();
   await page.waitForURL(/\/app\/reservations\/[\w-]+$/);
-  await page.getByRole('button', { name: /^Abrir locker/ }).click();
-  await page.getByText(/Abertura simulada do compartimento/).waitFor();
-  await screenshot(page, '02-joaquim-unlock');
+  await page.getByRole('heading', { name: 'Acesso ao Compartimento Físico' }).waitFor();
+  await screenshot(page, '02-joaquim-reserved');
   await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: 'Encerrar e liberar compartimento' }).click();
-  await page.getByRole('button', { name: /^Abrir locker/ }).waitFor({ state: 'detached' });
-  report.checks.push('Persona Joaquim: checkout, reserva Active, abertura e encerramento');
+  await page.getByText('Finalizada').waitFor();
+  report.checks.push('Persona Joaquim: checkout, reserva Active e encerramento');
 
-  await persona('guilherme@eba.ufrj.br', '/app/explore');
-  await go('/partner/dashboard');
+  await persona('Prof. Guilherme', '/partner/dashboard');
   await page.getByRole('heading', { name: 'Laboratório de Artes Modernas — EBA', exact: true }).first().waitFor();
+  await page.getByRole('button', { name: 'Sair' }).waitFor();
   await go('/partner/financial');
   await page.getByRole('heading', { name: 'Demonstrativo de receitas' }).waitFor();
   await page.getByText('Líquido Parceiro (90%)', { exact: true }).waitFor();
@@ -103,7 +103,7 @@ async function main() {
   await page.locator('tbody tr').first().waitFor();
   report.checks.push('Persona Guilherme: painel, lockers, reservas e financeiro 90/10');
 
-  await persona('admin@unilocker.ufrj.br', '/admin/dashboard');
+  await persona('Admin', '/admin/dashboard');
   await page.getByRole('heading', { name: 'Painel Administrativo — Operação UFRJ' }).waitFor();
   await screenshot(page, '04-admin-dashboard');
   await go('/admin/partners');

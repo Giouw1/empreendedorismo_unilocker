@@ -63,7 +63,7 @@ export const ActiveReservationBanner: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-xl transition-colors">
-          <span>Abrir</span>
+          <span>Ver reserva</span>
           <ChevronRight className="w-4 h-4" />
         </div>
       </Link>

@@ -113,7 +113,7 @@ export const ReservationCard: React.FC<ReservationCardProps> = ({ reservation, c
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 shadow-sm shadow-emerald-600/20 active:scale-95 transition-all"
           >
             <KeyRound className="w-3.5 h-3.5" />
-            <span>Acessar Locker</span>
+            <span>Ver reserva</span>
           </Link>
         ) : (
           <Link

@@ -1,6 +1,5 @@
 import { NavLink, Outlet, Link } from 'react-router-dom';
 import { Compass, LifeBuoy, Lock, Ticket, UserCircle } from 'lucide-react';
-import { DemoPersonaSwitcher } from '../components/DemoPersonaSwitcher';
 import { ActiveReservationBanner } from '../components/ActiveReservationBanner';
 
 const navItems = [
@@ -19,7 +18,6 @@ export default function UserMobileLayout() {
           <Link to="/app/explore" className="flex items-center gap-2 font-bold text-brand-700">
             <Lock className="h-5 w-5" /> UniLocker UFRJ
           </Link>
-          <DemoPersonaSwitcher />
         </header>
 
         <main className="flex-1 px-4 pt-4 pb-28">

@@ -79,16 +79,7 @@ export default function CheckoutPage() {
         </h4>
         <p>• {location.openingHours ? `Horário do local: ${location.openingHours}` : 'Acesso durante horário acadêmico'}</p>
         <p>• {location.usageRules || 'Não armazene substâncias ilícitas, inflamáveis ou perecíveis.'}</p>
-        <p>• Você receberá acesso eletrônico imediato após a confirmação.</p>
-      </div>
-
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs text-emerald-900 space-y-1">
-        <p className="flex items-center gap-1.5 font-bold text-emerald-800">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Ativação Instantânea (Pitch MVP)
-        </p>
-        <p className="leading-relaxed">
-          Sem necessidade de gateway ou cartão de crédito externo. O aluguel é iniciado imediatamente e a fechadura é liberada no celular.
-        </p>
+        <p>• O acerto financeiro e a liberação física do compartimento são combinados diretamente com o responsável pelo espaço.</p>
       </div>
 
       <button
@@ -98,7 +89,7 @@ export default function CheckoutPage() {
         className="btn-primary w-full py-4 text-base font-black shadow-lg shadow-brand-600/25 active:scale-[0.99] transition-all disabled:opacity-50"
       >
         {pending ? <Spinner /> : <CheckCircle2 className="w-5 h-5 inline mr-2" />}
-        Confirmar e Ativar Locker
+        Confirmar Reserva
       </button>
     </div>
   );

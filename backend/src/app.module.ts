@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import { AccessModule } from './access/access.module';
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthGuard } from './common/auth/auth.guard';
@@ -18,7 +17,6 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     LocationsModule,
     ReservationsModule,
-    AccessModule,
     PartnersModule,
     SupportModule,
     AdminModule,

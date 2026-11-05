@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Clock, HelpCircle, MapPin, PlusCircle, Power, History } from 'lucide-react';
+import { Clock, HelpCircle, MapPin, PlusCircle, Power, Info } from 'lucide-react';
 import { reservationsService } from '../../services/reservations.service';
-import { accessService } from '../../services/access.service';
 import { useAction, useAsync } from '../../hooks/useAsync';
 import { useCountdown } from '../../hooks/useCountdown';
 import {
-  accessResultLabels,
   formatCents,
   formatDateTime,
   lockerSizeLabels,
@@ -18,7 +16,6 @@ import {
 } from '../../utils/formatters';
 import type { RentalPeriod } from '../../types/api';
 import { Badge, ErrorAlert, Loading, SuccessAlert } from '../../components/ui';
-import { AccessButton } from '../../components/domain/AccessButton';
 import { ConfirmationDialog } from '../../components/domain/ConfirmationDialog';
 
 export default function ActiveReservationPage() {
@@ -27,7 +24,6 @@ export default function ActiveReservationPage() {
     () => reservationsService.getById(id),
     [id],
   );
-  const { data: events, reload: reloadEvents } = useAsync(() => accessService.listEvents(id), [id]);
 
   const mutateAction = useAction();
   const [confirmedEmpty, setConfirmedEmpty] = useState(false);
@@ -40,14 +36,6 @@ export default function ActiveReservationPage() {
   if (error || !reservation) return <ErrorAlert message={error ?? 'Reserva não encontrada'} onRetry={() => void reload()} />;
 
   const isActive = reservation.status === 'Active';
-
-  const handleUnlock = async () => {
-    const ev = await accessService.unlock(reservation.id);
-    void reloadEvents();
-    if (ev.result !== 'CONFIRMED') {
-      throw new Error(`${accessResultLabels[ev.result] || 'Falha'}: ${ev.message}`);
-    }
-  };
 
   const handleExtend = async (additionalPeriod: RentalPeriod) => {
     const updated = await mutateAction.run(() =>
@@ -125,16 +113,24 @@ export default function ActiveReservationPage() {
       {successMessage && <SuccessAlert message={successMessage} />}
       <ErrorAlert message={mutateAction.error} />
 
-      {/* Botão de Acesso Eletrônico Animado */}
-      {isActive && (
-        <div className="py-1">
-          <AccessButton
-            lockerCode={reservation.lockerCode}
-            onOpen={handleUnlock}
-            disabled={countdown.isExpired}
-          />
+      {/* Orientações de Acesso ao Locker Físico (Caixa Preta sob gestão do parceiro) */}
+      <div className="card space-y-2.5 bg-slate-50/80 border-slate-200">
+        <div className="flex items-center gap-2">
+          <Info className="w-4 h-4 text-brand-600 shrink-0" />
+          <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wide">
+            Acesso ao Compartimento Físico
+          </h4>
         </div>
-      )}
+        <p className="text-xs text-slate-600 leading-relaxed">
+          O acesso ao <strong>Locker {reservation.lockerCode}</strong> e o controle de fechadura/chave são administrados diretamente pelo responsável pelo espaço ({reservation.locationName}).
+        </p>
+        {reservation.accessInstructions && (
+          <div className="p-2.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-700">
+            <span className="font-semibold block text-[11px] text-slate-500 mb-0.5">Orientações do espaço:</span>
+            {reservation.accessInstructions}
+          </div>
+        )}
+      </div>
 
       {/* Ações Rápidas de Apoio */}
       <div className="grid grid-cols-2 gap-2">
@@ -226,36 +222,6 @@ export default function ActiveReservationPage() {
         confirmLabel="Sim, Cancelar"
         variant="warning"
       />
-
-      {/* Histórico de Aberturas do Compartimento */}
-      <div className="card space-y-2.5">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold tracking-wide text-slate-700 uppercase flex items-center gap-1.5">
-            <History className="w-3.5 h-3.5 text-slate-500" /> Histórico de aberturas ({events?.length ?? 0})
-          </h3>
-          <span className="text-[11px] text-slate-400">Auditoria eletrônica</span>
-        </div>
-
-        {!events?.length ? (
-          <p className="text-xs text-slate-400 py-2 text-center">Nenhuma abertura registrada ainda.</p>
-        ) : (
-          <ul className="space-y-2 text-xs divide-y divide-slate-100">
-            {events.map((ev) => (
-              <li key={ev.id} className="pt-2 flex items-center justify-between">
-                <div>
-                  <span className="font-semibold text-slate-800">
-                    {accessResultLabels[ev.result] || ev.result}
-                  </span>
-                  {ev.message && <span className="text-slate-500 block text-[11px]">{ev.message}</span>}
-                </div>
-                <span className="text-slate-400 font-mono text-[11px]">
-                  {formatDateTime(ev.createdAt)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
     </div>
   );
 }

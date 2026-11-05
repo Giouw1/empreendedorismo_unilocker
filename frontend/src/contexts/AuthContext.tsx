@@ -38,6 +38,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function homePathFor(user: UserDto | null): string {
   if (!user) return '/login';
   if (user.roles.includes('ADMIN')) return '/admin/dashboard';
+  if (user.roles.includes('PARTNER')) return '/partner/dashboard';
   return '/app/explore';
 }
 
