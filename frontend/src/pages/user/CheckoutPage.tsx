@@ -1,16 +1,18 @@
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { locationsService } from '../../services/locations.service';
 import { reservationsService } from '../../services/reservations.service';
 import { useAction, useAsync } from '../../hooks/useAsync';
-import { formatCents, lockerSizeLabels, periodLabels } from '../../utils/formatters';
 import type { LockerSize, RentalPeriod } from '../../types/api';
 import { ErrorAlert, Loading, PageHeader, Spinner } from '../../components/ui';
+import { PriceSummary } from '../../components/domain/PriceSummary';
 
 interface CheckoutState {
   locationId: string;
   size: LockerSize;
   period: RentalPeriod;
+  lockerId?: string;
+  lockerCode?: string;
 }
 
 export default function CheckoutPage() {
@@ -36,6 +38,7 @@ export default function CheckoutPage() {
         locationId: location.id,
         size: state.size,
         period: state.period,
+        lockerId: state.lockerId || undefined,
       }),
     );
     if (created) {
@@ -45,48 +48,57 @@ export default function CheckoutPage() {
 
   return (
     <div className="space-y-4">
-      <Link to={`/app/locations/${location.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600">
+      <Link
+        to={`/app/locations/${location.id}`}
+        className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-brand-600 transition-colors"
+      >
         <ArrowLeft className="h-4 w-4" /> Voltar ao ponto
       </Link>
 
-      <PageHeader title="Confirmar reserva" subtitle="Revise os dados antes de ativar seu compartimento" />
+      <PageHeader
+        title="Confirmar reserva"
+        subtitle="Revise os detalhes da contratação antes de ativar o guarda-volumes"
+      />
 
       <ErrorAlert message={submitError} />
 
-      <div className="card space-y-2 text-sm">
-        <div className="flex justify-between">
-          <span className="text-slate-500">Ponto</span>
-          <strong className="text-right">{location.name}</strong>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-slate-500">Local</span>
-          <span className="text-right text-xs">{location.building} • {location.floor}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-slate-500">Tamanho</span>
-          <strong>{lockerSizeLabels[state.size]}</strong>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-slate-500">Período</span>
-          <strong>{periodLabels[state.period]}</strong>
-        </div>
-        <div className="flex justify-between border-t border-slate-200 pt-2 text-base">
-          <span className="font-bold">Valor total</span>
-          <strong className="text-brand-700">{formatCents(plan?.priceCents)}</strong>
-        </div>
+      {plan && (
+        <PriceSummary
+          period={state.period}
+          size={state.size}
+          amountCents={plan.priceCents}
+          locationName={location.name}
+          lockerCode={state.lockerCode}
+        />
+      )}
+
+      {/* Regras e Instruções */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-2 text-xs text-slate-600">
+        <h4 className="font-bold text-slate-900 flex items-center gap-1.5">
+          <ShieldCheck className="w-4 h-4 text-brand-600" /> Instruções de uso e horários
+        </h4>
+        <p>• {location.openingHours ? `Horário do local: ${location.openingHours}` : 'Acesso durante horário acadêmico'}</p>
+        <p>• {location.usageRules || 'Não armazene substâncias ilícitas, inflamáveis ou perecíveis.'}</p>
+        <p>• Você receberá acesso eletrônico imediato após a confirmação.</p>
       </div>
 
-      <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">
-        <p className="flex items-center gap-1.5 font-bold">
-          <CheckCircle2 className="h-4 w-4" /> Ativação imediata (Demonstração MVP)
+      <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs text-emerald-900 space-y-1">
+        <p className="flex items-center gap-1.5 font-bold text-emerald-800">
+          <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Ativação Instantânea (Pitch MVP)
         </p>
-        <p className="mt-1">
-          Um compartimento compatível será atribuído automaticamente e liberado para abertura imediata pelo aplicativo.
+        <p className="leading-relaxed">
+          Sem necessidade de gateway ou cartão de crédito externo. O aluguel é iniciado imediatamente e a fechadura é liberada no celular.
         </p>
       </div>
 
-      <button type="button" disabled={pending || !plan} onClick={() => void handleConfirm()} className="btn-primary w-full py-3">
-        {pending && <Spinner />} Confirmar e ativar locker
+      <button
+        type="button"
+        disabled={pending || !plan}
+        onClick={() => void handleConfirm()}
+        className="btn-primary w-full py-4 text-base font-black shadow-lg shadow-brand-600/25 active:scale-[0.99] transition-all disabled:opacity-50"
+      >
+        {pending ? <Spinner /> : <CheckCircle2 className="w-5 h-5 inline mr-2" />}
+        Confirmar e Ativar Locker
       </button>
     </div>
   );

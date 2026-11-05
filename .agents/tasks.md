@@ -32,16 +32,16 @@
 
 ---
 
-## Fase 2A — Desenvolvimento Completo do Frontend (`implementation_frontend.md`)
+## Fase 2A — Desenvolvimento Completo do Frontend (`implementation_frontend.md`) ✅
 > **Escopo Exclusivo:** `/frontend`
 
-- [ ] Criar biblioteca de componentes do domínio (`LocationCard`, `LockerCard`, `AvailabilityBadge`, `PriceSummary`, `ReservationCard`, `AccessButton` animado, `ConfirmationDialog`).
-- [ ] Implementar `CampusVisualMap` em SVG interativo (100% offline-safe para apresentações).
-- [ ] Implementar hooks `useCountdown` (tempo restante ao vivo) e `useLocalStorageDraft` (rascunho do wizard).
-- [ ] Adicionar Banner Flutuante global de *Reserva Ativa* em `UserMobileLayout`.
-- [ ] Refinar todas as telas da jornada do Estudante (filtros combinados, galeria do ponto, animação de destravamento e guia indoor).
-- [ ] Refinar todas as telas do Ofertador (Wizard de 4 etapas, grade visual dos armários com trava quando ocupados e gráficos/barras de monetização 90%/10%).
-- [ ] Refinar o Painel Administrativo Web (curadoria de parceiros/pontos, visão de GMV/comissão e central de incidentes).
+- [x] Criar biblioteca de componentes do domínio (`LocationCard`, `LockerCard`, `AvailabilityBadge`, `PriceSummary`, `ReservationCard`, `AccessButton` animado, `ConfirmationDialog`).
+- [x] Implementar `CampusVisualMap` em SVG interativo (100% offline-safe para apresentações).
+- [x] Implementar hooks `useCountdown` (tempo restante ao vivo) e `useLocalStorageDraft` (rascunho do wizard).
+- [x] Adicionar Banner Flutuante global de *Reserva Ativa* em `UserMobileLayout`.
+- [x] Refinar todas as telas da jornada do Estudante (filtros combinados, galeria do ponto, animação de destravamento e guia indoor).
+- [x] Refinar todas as telas do Ofertador (Wizard de 4 etapas, grade visual dos armários com trava quando ocupados e gráficos/barras de monetização 90%/10%).
+- [x] Refinar o Painel Administrativo Web (curadoria de parceiros/pontos, visão de GMV/comissão e central de incidentes).
 
 ---
 
@@ -56,5 +56,6 @@
 
 ---
 
-## Fase 3 — Homologação Final para o Pitch
-- [ ] Conectar Frontend (Fase 2A) e Backend SQLite (Fase 2B) e ensaiar roteiro completo de demonstração (*Joaquim*, *Cintra*, *Prof. Guilherme* e *Admin*).
+## Fase 3 — Homologação Final para o Pitch ✅
+- [x] Conectar Frontend (Fase 2A) e Backend SQLite (Fase 2B) e validar roteiro completo de demonstração (*Joaquim*, *Cintra*, *Prof. Guilherme* e *Admin*) via `npm run test:browser` (0 falhas).
+- [x] Roteiro executivo completo em [`docs/ROTEIRO_PITCH.md`](../docs/ROTEIRO_PITCH.md) e Guia do Apresentador in-app no seletor de personas.

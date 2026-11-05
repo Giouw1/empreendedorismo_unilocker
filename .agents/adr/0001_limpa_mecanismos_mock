@@ -1,0 +1,17 @@
+# Contexto
+Usamos alguns mecanismos mock para apresentar o MVP com as finalidades básicas sem ter impacto
+# Problema
+Algumas funcionalidades muito fora da realidade foram introduzidas, que são muito longe do MVP.
+# Solução
+- Retire completamente funcionalidade de acionamento de hardware. O locker em si vai ser uma caixa preta.
+- Não entre em detalhes sobre a autenticação de parceiro, remova essa funcionalidade também. Isso deve ser uma caixa preta.
+- O método de pagamento é por hora caixa preta, deixe para que seja realizado entre os parceiros, e não por meio da plataforma. Retire, então, os mock's de pagamento.
+-  Mantenha a avaliação lazy de expirar. Isso faz parte do software base.
+-  Mantenha o armazenamento de mídias como é. Isso pode ser básico
+-  Mantenha o serviço de geolocalização.
+
+# Detalhe
+Qualquer inconsistência nas soluções, pergunte.
+
+
+

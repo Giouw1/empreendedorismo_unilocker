@@ -1,6 +1,7 @@
 import { NavLink, Outlet, Link } from 'react-router-dom';
 import { Compass, LifeBuoy, Lock, Ticket, UserCircle } from 'lucide-react';
 import { DemoPersonaSwitcher } from '../components/DemoPersonaSwitcher';
+import { ActiveReservationBanner } from '../components/ActiveReservationBanner';
 
 const navItems = [
   { to: '/app/explore', label: 'Explorar', icon: Compass },
@@ -9,7 +10,7 @@ const navItems = [
   { to: '/app/profile', label: 'Perfil', icon: UserCircle },
 ];
 
-/** Layout mobile-first do Usuário: container centralizado + barra inferior fixa. */
+/** Layout mobile-first do Usuário: container centralizado + barra inferior fixa + banner de reserva ativa. */
 export default function UserMobileLayout() {
   return (
     <div className="min-h-screen bg-slate-100">
@@ -21,11 +22,13 @@ export default function UserMobileLayout() {
           <DemoPersonaSwitcher />
         </header>
 
-        <main className="flex-1 px-4 pt-4 pb-24">
+        <main className="flex-1 px-4 pt-4 pb-28">
           <Outlet />
         </main>
 
-        <nav className="fixed bottom-0 left-1/2 z-20 flex w-full max-w-md -translate-x-1/2 border-t border-slate-200 bg-white">
+        <ActiveReservationBanner />
+
+        <nav className="fixed bottom-0 left-1/2 z-20 flex w-full max-w-md -translate-x-1/2 border-t border-slate-200 bg-white shadow-lg">
           {navItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}

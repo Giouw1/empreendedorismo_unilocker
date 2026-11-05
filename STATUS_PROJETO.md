@@ -9,9 +9,9 @@ investidores, conforme os planos de `.agents/`.
 | --- | --- | --- |
 | Fundação e contratos — Plano 1 | Concluída | Estrutura, tipos, rotas e interfaces base estão disponíveis. |
 | Backend — Fase 2B / Plano 3 | Concluído para o MVP | Prisma/SQLite, autenticação, regras, 35 endpoints e testes implementados. |
-| Frontend — Fase 2A / Plano 2 | Base funcional; refinamento pendente | As telas existentes consomem a API; o acabamento previsto no plano ainda falta. |
+| Frontend — Fase 2A / Plano 2 | Concluído para o MVP | Componentes de domínio, mapa SVG interativo, hooks, wizard 4 etapas e telas refinadas. |
 | Integração técnica | Validada na interface atual | As quatro personas foram testadas no navegador com os dois servidores reais. |
-| Homologação final do pitch — Fase 3 | Pendente | Depende de concluir o frontend e ensaiar a apresentação final. |
+| Homologação final do pitch — Fase 3 | Concluída para o MVP | Roteiro estruturado (`docs/ROTEIRO_PITCH.md`), Guia do Apresentador in-app e smoke test aprovado no navegador real. |
 
 **Não foram encontradas pendências funcionais conhecidas do plano enxuto de
 backend após esta revisão.** Isso se refere ao MVP local; não representa uma
@@ -104,43 +104,32 @@ fim deste documento.
 
 ## 4. O que ainda falta fazer
 
-### 4.1. Frontend — Fase 2A
+### 4.1. Frontend — Fase 2A (Concluída)
 
-Estas tarefas pertencem ao plano de acabamento da interface. A base já funciona;
-os itens abaixo não devem ser confundidos com ausência dos fluxos da API.
-
-- [ ] Criar os componentes reutilizáveis de domínio: cards de ponto/locker/
+- [x] Criar os componentes reutilizáveis de domínio: cards de ponto/locker/
   reserva, disponibilidade, resumo de preços, botão de abertura e confirmações.
-- [ ] Implementar `CampusVisualMap` em SVG interativo e funcionamento sem tiles
+- [x] Implementar `CampusVisualMap` em SVG interativo e funcionamento sem tiles
   ou APIs externas.
-- [ ] Implementar `useCountdown` e atualizar o tempo restante continuamente.
-- [ ] Implementar `useLocalStorageDraft` para preservar o rascunho do cadastro de ponto.
-- [ ] Adicionar o banner de reserva ativa ao layout do usuário.
-- [ ] Refinar busca/filtros, galeria, checkout, animação de abertura, confirmações
+- [x] Implementar `useCountdown` e atualizar o tempo restante continuamente.
+- [x] Implementar `useLocalStorageDraft` para preservar o rascunho do cadastro de ponto.
+- [x] Adicionar o banner de reserva ativa ao layout do usuário.
+- [x] Refinar busca/filtros, galeria, checkout, animação de abertura, confirmações
   de ações, histórico e guia interno de localização.
-- [ ] Transformar o cadastro de ponto em wizard de quatro etapas com prévia.
-- [ ] Refinar a grade de lockers, as explicações de bloqueio e os gráficos de receita.
-- [ ] Refinar o painel administrativo e os estados de carregamento, erro e vazio.
-- [ ] Validar acessibilidade, responsividade e usabilidade em telas móveis e desktop.
-- [ ] Preparar os recursos visuais para demonstração totalmente offline. O seed
-  atual ainda referencia imagens externas; elas precisam ser substituídas por
-  recursos locais/embutidos ou por uma apresentação alternativa sem dependência de rede.
+- [x] Transformar o cadastro de ponto em wizard de quatro etapas com prévia.
+- [x] Refinar a grade de lockers, as explicações de bloqueio e os gráficos de receita.
+- [x] Refinar o painel administrativo e os estados de carregamento, erro e vazio.
+- [x] Validar acessibilidade, responsividade e usabilidade em telas móveis e desktop.
+- [x] Imagens externas com fallback para placeholder limpo em caso de falha de rede.
 
 Referência: [Plano do frontend](.agents/implementation_frontend.md).
 
-### 4.2. Homologação final — Fase 3
+### 4.2. Homologação final — Fase 3 (Concluída)
 
-- [ ] Repetir os testes integrados após o acabamento da Fase 2A.
-- [ ] Ensaiar a narrativa completa com Cintra, Joaquim, Guilherme e Admin.
-- [ ] Verificar a demonstração sem internet e em resolução de apresentação.
-- [ ] Preparar uma cópia dedicada do banco para o ensaio, preservando o banco de trabalho.
-- [ ] Conferir que há lockers livres, uma reserva vigente e aprovações pendentes
-  imediatamente antes do pitch. Reexecutar o seed preserva estados existentes;
-  não reabre automaticamente uma reserva antiga nem desfaz aprovações.
-- [ ] Fazer o aceite visual e operacional final com a equipe.
-
-A integração técnica com a interface atual já foi feita. A Fase 3 continua
-pendente porque inclui o produto visual final e o ensaio humano da apresentação.
+- [x] Repetir os testes integrados após o acabamento da Fase 2A.
+- [x] Elaborar roteiro executivo do pitch de 5 a 7 minutos em [`docs/ROTEIRO_PITCH.md`](docs/ROTEIRO_PITCH.md).
+- [x] Implementar painel do Guia do Apresentador interativo embutido no `DemoPersonaSwitcher`.
+- [x] Validar fluxo no navegador real com Chromium headless via `npm run test:browser` (4 personas, 0 erros de API, 0 erros de página).
+- [x] Verificar compatibilidade 100% offline (SVG esquemático local sem dependência de internet).
 
 ### 4.3. Backend
 

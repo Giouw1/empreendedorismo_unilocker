@@ -1,0 +1,64 @@
+[Nest] 26728  - 05/11/2026, 10:31:17   ERROR [API] PrismaClientKnownRequestError: 
+Invalid `this.db.user.findUnique()` invocation in
+C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\src\auth\auth.service.ts:22:37
+
+  19   return this.session(user.id);
+  20 }
+  21 async login(dto: LoginRequest): Promise<AuthResponseDto> {
+→ 22   const user = await this.db.user.findUnique(
+The table `main.User` does not exist in the current database.
+    at ei.handleRequestError (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:228:13)
+    at ei.handleAndLogRequestError (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at ei.request (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:143:12)
+    at async a (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:833:24)
+    at async AuthService.login (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\src\auth\auth.service.ts:22:18)
+    at async C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@nestjs\core\router\router-execution-context.js:81:62
+    at async C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@nestjs\core\router\router-proxy.js:9:17
+[Nest] 26728  - 05/11/2026, 10:31:18   ERROR [API] PrismaClientKnownRequestError: 
+Invalid `this.db.user.findUnique()` invocation in
+C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\src\auth\auth.service.ts:22:37
+
+  19   return this.session(user.id);
+  20 }
+  21 async login(dto: LoginRequest): Promise<AuthResponseDto> {
+→ 22   const user = await this.db.user.findUnique(
+The table `main.User` does not exist in the current database.
+    at ei.handleRequestError (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:228:13)
+    at ei.handleAndLogRequestError (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at ei.request (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:143:12)
+    at async a (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:833:24)
+    at async AuthService.login (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\src\auth\auth.service.ts:22:18)
+    at async C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@nestjs\core\router\router-execution-context.js:81:62
+    at async C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@nestjs\core\router\router-proxy.js:9:17
+[Nest] 26728  - 05/11/2026, 10:31:19   ERROR [API] PrismaClientKnownRequestError: 
+Invalid `this.db.user.findUnique()` invocation in
+C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\src\auth\auth.service.ts:22:37
+
+  19   return this.session(user.id);
+  20 }
+  21 async login(dto: LoginRequest): Promise<AuthResponseDto> {
+→ 22   const user = await this.db.user.findUnique(
+The table `main.User` does not exist in the current database.
+    at ei.handleRequestError (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:228:13)
+    at ei.handleAndLogRequestError (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at ei.request (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:143:12)
+    at async a (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:833:24)
+    at async AuthService.login (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\src\auth\auth.service.ts:22:18)
+    at async C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@nestjs\core\router\router-execution-context.js:81:62
+    at async C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@nestjs\core\router\router-proxy.js:9:17
+[Nest] 26728  - 05/11/2026, 10:31:19   ERROR [API] PrismaClientKnownRequestError: 
+Invalid `this.db.user.findUnique()` invocation in
+C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\src\auth\auth.service.ts:22:37
+
+  19   return this.session(user.id);
+  20 }
+  21 async login(dto: LoginRequest): Promise<AuthResponseDto> {
+→ 22   const user = await this.db.user.findUnique(
+The table `main.User` does not exist in the current database.
+    at ei.handleRequestError (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:228:13)
+    at ei.handleAndLogRequestError (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at ei.request (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:143:12)
+    at async a (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:833:24)
+    at async AuthService.login (C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\src\auth\auth.service.ts:22:18)
+    at async C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@nestjs\core\router\router-execution-context.js:81:62
+    at async C:\Users\nb1_l\Documents\Giovanni\brasil2026.2\empreendedorismo\backend\node_modules\@nestjs\core\router\router-proxy.js:9:17
