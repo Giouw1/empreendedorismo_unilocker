@@ -80,7 +80,7 @@ describe('Contrato MVP — HTTP + SQLite real', { concurrency: false }, () => {
 
   test('catálogo, filtros combinados, boolean false, detalhe e disponibilidade', async () => {
     const list = await api('/locations?onlyAvailable=false');
-    assert.equal(list.body.length, 2);
+    assert.equal(list.body.length, 3);
     assert.ok(list.body.every((l: any) => l.status === 'ACTIVE' && Number.isInteger(l.startingDailyPriceCents)));
     assert.equal((await api('/locations?size=SMALL&period=DAILY&maxPriceCents=500&onlyAvailable=true')).body.length, 1);
     assert.equal((await api('/locations?size=LARGE&period=DAILY&maxPriceCents=500&onlyAvailable=true')).body.length, 0);
@@ -232,10 +232,10 @@ describe('Contrato MVP — HTTP + SQLite real', { concurrency: false }, () => {
     assert.ok((await api('/support/tickets/me', 'GET', undefined, 'cintra')).body.some((t: any) => t.id === ticket.body.id));
     assert.equal((await api('/admin/users?search=cintra', 'GET', undefined, 'admin')).body.length, 1);
     assert.equal((await api('/admin/partners/pending?includeAll=false', 'GET', undefined, 'admin')).body.length, 1);
-    assert.equal((await api('/admin/partners/pending?includeAll=true', 'GET', undefined, 'admin')).body.length, 4);
+    assert.equal((await api('/admin/partners/pending?includeAll=true', 'GET', undefined, 'admin')).body.length, 5);
     assert.equal((await api('/admin/locations?status=PENDING_APPROVAL', 'GET', undefined, 'admin')).body.length, 1);
     assert.equal((await api('/admin/reservations?userId=u-cintra&status=Incident', 'GET', undefined, 'admin')).body.length, 1);
-    assert.equal((await api('/admin/dashboard', 'GET', undefined, 'admin')).body.totalUsers, 7);
+    assert.equal((await api('/admin/dashboard', 'GET', undefined, 'admin')).body.totalUsers, 8);
   });
 
   test('validação real de DTOs, enums, valores monetários e JSON booleano', async () => {
@@ -259,7 +259,7 @@ describe('Contrato MVP — HTTP + SQLite real', { concurrency: false }, () => {
     const count = await db.reservation.count();
     await seedDatabase(db);
     assert.equal(await db.reservation.count(), count);
-    assert.equal(await db.user.count(), 7);
+    assert.equal(await db.user.count(), 8);
     await db.$disconnect(); await db.$connect();
     assert.equal((await api('/users/me', 'GET', undefined, 'cintra')).body.id, 'u-cintra');
   });

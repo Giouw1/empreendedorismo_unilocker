@@ -12,7 +12,28 @@ export async function seedDatabase(db: PrismaClient) {
       await tx.user.upsert({ where: { email: u.email }, update: {}, create: { ...u, passwordHash, rolesJson: JSON.stringify(roles) } });
     }
     for (const p of fixtures.partners) await tx.partner.upsert({ where: { id: p.id }, update: {}, create: p });
-    for (const { photoUrls, ...l } of fixtures.locations) await tx.location.upsert({ where: { id: l.id }, update: {}, create: { ...l, photoUrlsJson: JSON.stringify(photoUrls) } });
+    for (const { photoUrls, ...l } of fixtures.locations) {
+      await tx.location.upsert({
+        where: { id: l.id },
+        update: {
+          name: l.name,
+          campus: l.campus,
+          building: l.building,
+          block: l.block,
+          floor: l.floor,
+          roomOrCorridor: l.roomOrCorridor,
+          reference: l.reference,
+          latitude: l.latitude,
+          longitude: l.longitude,
+          openingHours: l.openingHours,
+          accessInstructions: l.accessInstructions,
+          usageRules: l.usageRules,
+          photoUrlsJson: JSON.stringify(photoUrls),
+          status: l.status,
+        },
+        create: { ...l, photoUrlsJson: JSON.stringify(photoUrls) },
+      });
+    }
     for (const k of fixtures.lockers) await tx.locker.upsert({ where: { id: k.id }, update: {}, create: k });
     for (const p of fixtures.pricingPlans) await tx.pricingPlan.upsert({ where: { id: p.id }, update: {}, create: p });
     for (const r of fixtures.reservations) await tx.reservation.upsert({ where: { id: r.id }, update: {}, create: r });

@@ -229,6 +229,15 @@ export class DemoFixtures {
         roles: ['USER'],
         createdAt: iso(-3 * DAY),
       },
+      {
+        id: 'u-capv',
+        name: 'Coordenação do Aulário — PV',
+        email: 'aulario@pv.ufrj.br',
+        password: '123456',
+        universityAffiliation: 'Campus Praia Vermelha — UFRJ',
+        roles: ['USER', 'PARTNER'],
+        createdAt: iso(-30 * DAY),
+      },
     ];
 
     this.partners = [
@@ -272,6 +281,16 @@ export class DemoFixtures {
         status: 'PENDING',
         createdAt: iso(-2 * DAY),
       },
+      {
+        id: 'p-aulario-pv',
+        userId: 'u-capv',
+        organizationName: 'Coordenação do Aulário — Praia Vermelha',
+        organizationType: 'Pavilhão de Aulas',
+        responsibleName: 'Coordenação Acadêmica PV',
+        contactPhone: '(21) 99999-0005',
+        status: 'APPROVED',
+        createdAt: iso(-25 * DAY),
+      },
     ];
 
     this.locations = [
@@ -293,8 +312,8 @@ export class DemoFixtures {
         usageRules:
           'Proibido armazenar alimentos perecíveis ou materiais inflamáveis. Retire seus pertences até o horário de fechamento.',
         photoUrls: [
-          'https://images.unsplash.com/photo-1544816155-12df9643f363?w=800',
-          'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800',
+          '/locations/eba-reitoria.jpg',
+          'https://upload.wikimedia.org/wikipedia/commons/c/c0/Reitoria_e_FAU_-_UFRJ.jpg',
         ],
         status: 'ACTIVE',
         createdAt: iso(-55 * DAY),
@@ -316,9 +335,36 @@ export class DemoFixtures {
           'Vá até a entrada principal do Bloco A do CT. No térreo, siga pelo corredor à direita da recepção. Os lockers estão no hall de convivência.',
         usageRules:
           'Uso exclusivo para pertences pessoais. Em caso de vencimento, o compartimento permanece retido até regularização.',
-        photoUrls: ['https://images.unsplash.com/photo-1562774053-701939374585?w=800'],
+        photoUrls: [
+          '/locations/ct-bloco-a.jpg',
+          'https://upload.wikimedia.org/wikipedia/commons/f/fa/Bloco_CT_-_UFRJ.jpg',
+        ],
         status: 'ACTIVE',
         createdAt: iso(-75 * DAY),
+      },
+      {
+        id: 'loc-aulario-pv',
+        partnerId: 'p-aulario-pv',
+        name: 'Aulário — UFRJ Praia Vermelha',
+        campus: 'Praia Vermelha',
+        building: 'Pavilhão de Aulas (Aulário)',
+        block: 'Bloco Acadêmico',
+        floor: '1º andar',
+        roomOrCorridor: 'Hall Central do Aulário',
+        reference: 'Próximo à entrada do Palácio Universitário e cantina',
+        latitude: -22.9537,
+        longitude: -43.1751,
+        openingHours: 'Seg a Sex, 07:00 às 21:30',
+        accessInstructions:
+          'Acesso pelo portão principal da Praia Vermelha (Av. Pasteur). Siga em direção ao Aulário / Palácio Universitário. Os lockers ficam no hall central do 1º andar.',
+        usageRules:
+          'Uso exclusivo para guarda de pertences acadêmicos e pessoais. Manter o compartimento trancado durante o período.',
+        photoUrls: [
+          '/locations/aulario-praia-vermelha.jpg',
+          'https://upload.wikimedia.org/wikipedia/commons/1/13/UFRJ_-_Campus_da_Praia_Vermelha.jpg',
+        ],
+        status: 'ACTIVE',
+        createdAt: iso(-20 * DAY),
       },
       {
         id: 'loc-letras',
@@ -370,6 +416,12 @@ export class DemoFixtures {
       mk('loc-ct', 'B-06', 'MEDIUM'),
       mk('loc-ct', 'B-07', 'LARGE'),
       mk('loc-ct', 'B-08', 'LARGE', 'MAINTENANCE'),
+      mk('loc-aulario-pv', 'PV-01', 'SMALL'),
+      mk('loc-aulario-pv', 'PV-02', 'SMALL'),
+      mk('loc-aulario-pv', 'PV-03', 'MEDIUM'),
+      mk('loc-aulario-pv', 'PV-04', 'MEDIUM'),
+      mk('loc-aulario-pv', 'PV-05', 'LARGE'),
+      mk('loc-aulario-pv', 'PV-06', 'LARGE'),
       mk('loc-letras', 'C-01', 'SMALL'),
       mk('loc-letras', 'C-02', 'SMALL'),
       mk('loc-letras', 'C-03', 'MEDIUM'),
@@ -379,6 +431,7 @@ export class DemoFixtures {
     const table: Record<string, Record<LockerSize, [number, number, number]>> = {
       'loc-eba': { SMALL: [500, 2500, 8000], MEDIUM: [800, 4000, 12000], LARGE: [1200, 6000, 18000] },
       'loc-ct': { SMALL: [600, 3000, 9000], MEDIUM: [900, 4500, 14000], LARGE: [1300, 6500, 20000] },
+      'loc-aulario-pv': { SMALL: [600, 3000, 9000], MEDIUM: [900, 4500, 14000], LARGE: [1300, 6500, 20000] },
       'loc-letras': { SMALL: [400, 2000, 7000], MEDIUM: [700, 3500, 11000], LARGE: [1000, 5000, 16000] },
     };
     const periods: RentalPeriod[] = ['DAILY', 'WEEKLY', 'MONTHLY'];
