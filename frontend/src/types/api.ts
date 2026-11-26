@@ -26,6 +26,7 @@ export type LockerStatus = 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'BLOCKED';
 export type RentalPeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY';
 
 export type ReservationStatus =
+  | 'PendingConfirmation'
   | 'Active'
   | 'Completed'
   | 'Cancelled'
@@ -84,7 +85,10 @@ export interface LockerDto {
 export interface LocationSummaryDto {
   id: string;
   partnerId: string;
+  /** Nome público do parceiro responsável por este ponto. */
   partnerName: string;
+  partnerContactPhone: string;
+  partnerContactEmail: string;
   name: string;
   campus: string;
   building: string;
@@ -186,6 +190,8 @@ export interface PartnerDashboardDto {
   periodRevenueCents: number;
   pendingIncidents: number;
   locations: LocationSummaryDto[];
+  /** Pré-reservas aguardando confirmação presencial do parceiro. */
+  pendingConfirmations: ReservationDto[];
 }
 
 export interface PartnerFinancialSummaryDto {
@@ -210,6 +216,9 @@ export interface AdminDashboardDto {
   platformRevenueCents: number;
   openIncidents: number;
 }
+
+/** Preço mínimo por período, em centavos (diário R$ 5, semanal R$ 25, mensal R$ 100). */
+export const MIN_PRICE_CENTS: Record<RentalPeriod, number> = { DAILY: 500, WEEKLY: 2500, MONTHLY: 10000 };
 
 // ==================== DTOs DE REQUISIÇÃO ====================
 
@@ -290,6 +299,10 @@ export interface LocationDataInput {
   accessInstructions: string;
   usageRules: string;
   photoUrls: string[];
+  /** Nome público do parceiro deste ponto (padrão: nome da organização). */
+  hostName?: string;
+  contactPhone?: string;
+  contactEmail?: string;
 }
 
 export interface LockerInput {

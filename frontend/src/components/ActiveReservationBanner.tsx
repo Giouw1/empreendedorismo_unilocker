@@ -1,72 +1,62 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { ChevronRight, Hourglass, KeyRound } from 'lucide-react';
 import { reservationsService } from '../services/reservations.service';
 import type { ReservationDto } from '../types/api';
 import { useCountdown } from '../hooks/useCountdown';
-import { KeyRound, ChevronRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
-export const ActiveReservationBanner: React.FC = () => {
+/** Atalho flutuante para a reserva em andamento (pré-reserva ou aluguel ativo). */
+export function ActiveReservationBanner() {
   const { user } = useAuth();
   const location = useLocation();
-  const [activeReservation, setActiveReservation] = useState<ReservationDto | null>(null);
+  const [current, setCurrent] = useState<ReservationDto | null>(null);
 
   useEffect(() => {
-    let isMounted = true;
+    let mounted = true;
     if (!user) {
-      setActiveReservation(null);
+      setCurrent(null);
       return;
     }
-
     reservationsService
       .listMine()
       .then((res) => {
-        if (!isMounted) return;
-        const active = res.active?.[0] || null;
-        setActiveReservation(active);
+        if (!mounted) return;
+        // Prioriza o aluguel ativo; senão, a pré-reserva mais recente.
+        setCurrent(res.active.find((r) => r.status === 'Active') ?? res.active.find((r) => r.status === 'PendingConfirmation') ?? null);
       })
-      .catch(() => {
-        // Silencioso se der erro ou estiver deslogado
-      });
-
+      .catch(() => undefined);
     return () => {
-      isMounted = false;
+      mounted = false;
     };
   }, [user, location.pathname]);
 
-  const countdown = useCountdown(activeReservation?.endTime);
+  const countdown = useCountdown(current?.endTime);
 
-  // Não exibe se o usuário já estiver na própria tela de detalhes daquela reserva
-  if (!activeReservation || location.pathname === `/app/reservations/${activeReservation.id}`) {
-    return null;
-  }
+  if (!current || location.pathname.startsWith(`/app/reservations/${current.id}`)) return null;
+
+  const pending = current.status === 'PendingConfirmation';
+  const Icon = pending ? Hourglass : KeyRound;
 
   return (
-    <div className="fixed bottom-14 left-1/2 -translate-x-1/2 z-20 w-full max-w-md px-3 animate-in slide-in-from-bottom-2 duration-300">
+    <div className="fixed inset-x-0 bottom-16 z-20 mx-auto w-full max-w-md px-3 md:inset-x-auto md:right-6 md:bottom-20 md:w-96 md:px-0">
       <Link
-        to={`/app/reservations/${activeReservation.id}`}
-        className="flex items-center justify-between p-3 rounded-box bg-success text-success-content shadow-lg hover:brightness-105 transition-all"
+        to={`/app/reservations/${current.id}`}
+        className={`flex items-center gap-3 rounded-box p-3 shadow-lg transition hover:brightness-105 ${
+          pending ? 'bg-warning text-warning-content' : 'bg-success text-success-content'
+        }`}
       >
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-field bg-white/20 flex items-center justify-center shrink-0">
-            <KeyRound className="w-5 h-5 " />
-          </div>
-          <div>
-            <div className="text-xs font-semibold flex items-center gap-1.5">
-              <span>Locker {activeReservation.lockerCode || 'Ativo'}</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-300" />
-            </div>
-            <div className="text-[11px] opacity-80 font-mono">
-              {countdown.isExpired ? 'Aluguel Expirado' : `Restam ${countdown.formatted}`}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-field transition-colors">
-          <span>Ver reserva</span>
-          <ChevronRight className="w-4 h-4" />
-        </div>
+        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-field bg-white/25">
+          <Icon className="h-5 w-5" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-semibold">Locker {current.lockerCode} · {current.locationName}</span>
+          <span className="block truncate text-xs opacity-80">
+            {pending ? 'Aguardando confirmação no local' : countdown.isExpired ? 'Aluguel vencido' : `Restam ${countdown.formatted}`}
+          </span>
+        </span>
+        <ChevronRight className="h-5 w-5 shrink-0 opacity-80" />
       </Link>
     </div>
   );
-};
+}

@@ -36,6 +36,7 @@ body,
 }
 
 body {
+  overflow-wrap: break-word;
   font-family:
     'Inter',
     system-ui,
@@ -47,6 +48,31 @@ body {
   color: var(--color-base-content);
 }
 
+/*
+ * Itens de grid podem encolher abaixo do tamanho do conteúdo: sem isso, um texto longo
+ * (nome de ponto, e-mail, ID) empurra o card para fora da tela em vez de quebrar ou truncar.
+ * Em flex, o encolhimento é decidido caso a caso com `min-w-0`.
+ * Fica em `@layer base` para que utilitários como `min-w-[140px]` continuem valendo.
+ */
+@layer base {
+  :where(.grid) > * {
+    min-width: 0;
+  }
+}
+
+/* Modo celular (iframe): sem barras de rolagem visíveis, toque sem destaque azul. */
+html.embedded {
+  -webkit-tap-highlight-color: transparent;
+}
+html.embedded,
+html.embedded * {
+  scrollbar-width: none;
+}
+html.embedded::-webkit-scrollbar,
+html.embedded *::-webkit-scrollbar {
+  display: none;
+}
+
 @layer components {
   /* Superfície padrão (equivalente a um card simples do daisyUI, com padding embutido). */
   .panel {
@@ -56,6 +82,14 @@ body {
     @apply mb-1.5 block text-sm font-medium text-base-content/80;
   }
   .page-title {
-    @apply text-xl font-semibold text-base-content;
+    @apply text-xl font-semibold text-base-content break-words;
+  }
+  /* Título de seção dentro de cards. */
+  .section-title {
+    @apply flex items-center gap-2 text-sm font-semibold text-base-content;
+  }
+  /* Ícone em "pastilha" com tamanho fixo, para alinhar listas e cards. */
+  .icon-chip {
+    @apply inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-field bg-primary/10 text-primary;
   }
 }

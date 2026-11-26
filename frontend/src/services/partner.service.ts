@@ -52,6 +52,18 @@ export const partnerService = {
     return data;
   },
 
+  /** Confirma presencialmente a pré-reserva: o aluguel fica ativo e o período começa a contar. */
+  async activateReservation(reservationId: string): Promise<ReservationDto> {
+    const { data } = await http.post<ReservationDto>(`/partner/reservations/${reservationId}/activate`);
+    return data;
+  },
+
+  /** Cancela a pré-reserva (ex.: a pessoa não compareceu) e libera o compartimento. */
+  async cancelReservation(reservationId: string): Promise<ReservationDto> {
+    const { data } = await http.post<ReservationDto>(`/partner/reservations/${reservationId}/cancel`);
+    return data;
+  },
+
   async getFinancial(): Promise<PartnerFinancialSummaryDto> {
     const { data } = await http.get<PartnerFinancialSummaryDto>('/partner/financial');
     return data;

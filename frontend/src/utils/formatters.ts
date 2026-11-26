@@ -32,6 +32,37 @@ export function formatDateTime(iso: string | null | undefined): string {
   return d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 }
 
+/** Tempo relativo curto: "agora", "há 5 min", "há 2 h", "há 3 dias". */
+export function formatRelative(iso: string, now: Date = new Date()): string {
+  const diff = now.getTime() - new Date(iso).getTime();
+  if (Number.isNaN(diff)) return '—';
+  const min = Math.round(diff / 60000);
+  if (min < 1) return 'agora';
+  if (min < 60) return `há ${min} min`;
+  const h = Math.round(min / 60);
+  if (h < 24) return `há ${h} h`;
+  const d = Math.round(h / 24);
+  return `há ${d} ${d === 1 ? 'dia' : 'dias'}`;
+}
+
+/** Saudação de acordo com o horário local. */
+export function greeting(now: Date = new Date()): string {
+  const h = now.getHours();
+  if (h >= 5 && h < 12) return 'Bom dia';
+  if (h >= 12 && h < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
+
+/** ID curto e legível para exibição (o ID completo continua disponível para cópia). */
+export function shortId(id: string): string {
+  return id.length > 12 ? `${id.slice(0, 8)}…` : id;
+}
+
+/** Status que ainda prendem o compartimento (pré-reserva, ativa, vencida, ocorrência). */
+export function isHoldingStatus(status: ReservationStatus): boolean {
+  return status === 'PendingConfirmation' || status === 'Active' || status === 'Expired' || status === 'Incident';
+}
+
 export function formatRemaining(endIso: string, now: Date = new Date()): string {
   const diffMs = new Date(endIso).getTime() - now.getTime();
   if (Number.isNaN(diffMs)) return '—';
@@ -97,6 +128,7 @@ export const periodShortLabels: Record<RentalPeriod, string> = {
 };
 
 export const reservationStatusLabels: Record<ReservationStatus, string> = {
+  PendingConfirmation: 'Aguardando confirmação',
   Active: 'Ativa',
   Completed: 'Finalizada',
   Cancelled: 'Cancelada',
@@ -134,6 +166,7 @@ export const ticketPriorityLabels: Record<TicketPriority, string> = {
 export const LOCKER_SIZES: LockerSize[] = ['SMALL', 'MEDIUM', 'LARGE'];
 export const RENTAL_PERIODS: RentalPeriod[] = ['DAILY', 'WEEKLY', 'MONTHLY'];
 export const RESERVATION_STATUSES: ReservationStatus[] = [
+  'PendingConfirmation',
   'Active',
   'Completed',
   'Cancelled',
@@ -166,6 +199,8 @@ export type BadgeTone = 'green' | 'yellow' | 'red' | 'blue' | 'gray' | 'purple';
 
 export function reservationTone(status: ReservationStatus): BadgeTone {
   switch (status) {
+    case 'PendingConfirmation':
+      return 'yellow';
     case 'Active':
       return 'green';
     case 'Expired':
