@@ -208,7 +208,7 @@ export default function CreateLocationPage() {
           return (
             <div
               key={s.num}
-              className={`p-2 rounded-xl text-center border-2 transition-all ${
+              className={`p-2 rounded-field text-center border-2 transition-all ${
                 isCurrent
                   ? 'border-brand-600 bg-brand-50/60 font-black text-brand-700 shadow-xs'
                   : isDone
@@ -234,7 +234,7 @@ export default function CreateLocationPage() {
 
       {/* ETAPA 1 — LOCALIZAÇÃO */}
       {step === 1 && (
-        <div className="card space-y-3">
+        <div className="panel space-y-3">
           <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2 pb-2 border-b border-slate-100">
             <Building2 className="w-4 h-4 text-brand-600" /> Informações do Espaço Físico
           </h3>
@@ -242,7 +242,7 @@ export default function CreateLocationPage() {
           <div>
             <label className="text-xs font-bold text-slate-700 block mb-1">Nome do Ponto</label>
             <input
-              className="input text-xs"
+              className="input w-full text-xs"
               value={draft.name}
               onChange={(e) => setDraft((p) => ({ ...p, name: e.target.value }))}
               placeholder="Ex: Espaço Maker Poli — Bloco F"
@@ -253,7 +253,7 @@ export default function CreateLocationPage() {
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">Campus</label>
               <select
-                className="input text-xs"
+                className="select w-full text-xs"
                 value={draft.campus}
                 onChange={(e) => setDraft((p) => ({ ...p, campus: e.target.value }))}
               >
@@ -267,7 +267,7 @@ export default function CreateLocationPage() {
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">Edifício / Prédio</label>
               <input
-                className="input text-xs"
+                className="input w-full text-xs"
                 value={draft.building}
                 onChange={(e) => setDraft((p) => ({ ...p, building: e.target.value }))}
                 placeholder="Ex: Centro de Tecnologia"
@@ -279,7 +279,7 @@ export default function CreateLocationPage() {
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">Bloco</label>
               <input
-                className="input text-xs"
+                className="input w-full text-xs"
                 value={draft.block}
                 onChange={(e) => setDraft((p) => ({ ...p, block: e.target.value }))}
                 placeholder="Ex: Bloco H"
@@ -288,7 +288,7 @@ export default function CreateLocationPage() {
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">Andar</label>
               <input
-                className="input text-xs"
+                className="input w-full text-xs"
                 value={draft.floor}
                 onChange={(e) => setDraft((p) => ({ ...p, floor: e.target.value }))}
                 placeholder="Ex: 2º andar"
@@ -300,7 +300,7 @@ export default function CreateLocationPage() {
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">Sala ou Corredor</label>
               <input
-                className="input text-xs"
+                className="input w-full text-xs"
                 value={draft.roomOrCorridor}
                 onChange={(e) => setDraft((p) => ({ ...p, roomOrCorridor: e.target.value }))}
                 placeholder="Ex: Hall da biblioteca"
@@ -309,7 +309,7 @@ export default function CreateLocationPage() {
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">Ponto de Referência</label>
               <input
-                className="input text-xs"
+                className="input w-full text-xs"
                 value={draft.reference}
                 onChange={(e) => setDraft((p) => ({ ...p, reference: e.target.value }))}
                 placeholder="Ex: Ao lado dos bebedouros"
@@ -320,7 +320,7 @@ export default function CreateLocationPage() {
           <div>
             <label className="text-xs font-bold text-slate-700 block mb-1">Horário de Funcionamento</label>
             <input
-              className="input text-xs"
+              className="input w-full text-xs"
               value={draft.openingHours}
               onChange={(e) => setDraft((p) => ({ ...p, openingHours: e.target.value }))}
               placeholder="Ex: Seg a Sex, 08:00 às 21:00"
@@ -330,7 +330,7 @@ export default function CreateLocationPage() {
           <div>
             <label className="text-xs font-bold text-slate-700 block mb-1">Instruções de Acesso</label>
             <textarea
-              className="input text-xs min-h-[60px]"
+              className="textarea w-full text-xs min-h-[60px]"
               value={draft.accessInstructions}
               onChange={(e) => setDraft((p) => ({ ...p, accessInstructions: e.target.value }))}
               placeholder="Explique como o aluno sobe até o local..."
@@ -340,7 +340,7 @@ export default function CreateLocationPage() {
           <div>
             <label className="text-xs font-bold text-slate-700 block mb-1">URL da Foto de Capa</label>
             <input
-              className="input text-xs"
+              className="input w-full text-xs"
               value={draft.coverPhotoUrl}
               onChange={(e) => setDraft((p) => ({ ...p, coverPhotoUrl: e.target.value }))}
               placeholder="https://images.unsplash.com/..."
@@ -350,7 +350,7 @@ export default function CreateLocationPage() {
           <button
             type="button"
             onClick={goToNextStep}
-            className="btn-primary w-full py-3 text-xs font-bold flex items-center justify-center gap-1.5"
+            className="btn btn-primary w-full py-3 text-xs font-bold flex items-center justify-center gap-1.5"
           >
             <span>Avançar para Armários</span>
             <ArrowRight className="w-4 h-4" />
@@ -360,16 +360,16 @@ export default function CreateLocationPage() {
 
       {/* ETAPA 2 — COMPARTIMENTOS */}
       {step === 2 && (
-        <div className="card space-y-4">
+        <div className="panel space-y-4">
           <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2 pb-2 border-b border-slate-100">
             Adicionar Compartimentos de Lockers
           </h3>
 
-          <div className="flex gap-2 items-end bg-slate-50 p-3 rounded-2xl border border-slate-100">
+          <div className="flex gap-2 items-end bg-slate-50 p-3 rounded-box border border-slate-100">
             <div className="flex-1">
               <label className="text-xs font-bold text-slate-700 block mb-1">Identificação / Código</label>
               <input
-                className="input text-xs uppercase"
+                className="input w-full text-xs uppercase"
                 value={newCode}
                 onChange={(e) => setNewCode(e.target.value)}
                 placeholder="Ex: H-05"
@@ -378,7 +378,7 @@ export default function CreateLocationPage() {
             <div className="w-32">
               <label className="text-xs font-bold text-slate-700 block mb-1">Tamanho</label>
               <select
-                className="input text-xs"
+                className="select w-full text-xs"
                 value={newSize}
                 onChange={(e) => setNewSize(e.target.value as LockerSize)}
               >
@@ -392,7 +392,7 @@ export default function CreateLocationPage() {
             <button
               type="button"
               onClick={handleAddLocker}
-              className="btn-primary px-4 py-2.5 text-xs font-bold flex items-center gap-1"
+              className="btn btn-primary px-4 py-2.5 text-xs font-bold flex items-center gap-1"
             >
               <Plus className="w-4 h-4" />
               <span>Adicionar</span>
@@ -406,10 +406,10 @@ export default function CreateLocationPage() {
             {draft.lockersData.map((locker, idx) => (
               <div
                 key={idx}
-                className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200 text-xs"
+                className="flex items-center justify-between p-2.5 rounded-field bg-white border border-slate-200 text-xs"
               >
                 <div className="flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-lg bg-slate-100 font-bold flex items-center justify-center text-slate-800">
+                  <span className="w-8 h-8 rounded-field bg-slate-100 font-bold flex items-center justify-center text-slate-800">
                     {locker.code}
                   </span>
                   <span className="font-semibold text-slate-700">
@@ -431,14 +431,14 @@ export default function CreateLocationPage() {
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="btn-secondary flex-1 py-3 text-xs font-bold flex items-center justify-center gap-1.5"
+              className="btn flex-1 py-3 text-xs font-bold flex items-center justify-center gap-1.5"
             >
               <ArrowLeft className="w-4 h-4" /> Voltar
             </button>
             <button
               type="button"
               onClick={goToNextStep}
-              className="btn-primary flex-1 py-3 text-xs font-bold flex items-center justify-center gap-1.5"
+              className="btn btn-primary flex-1 py-3 text-xs font-bold flex items-center justify-center gap-1.5"
             >
               <span>Avançar para Preços</span>
               <ArrowRight className="w-4 h-4" />
@@ -449,14 +449,14 @@ export default function CreateLocationPage() {
 
       {/* ETAPA 3 — PREÇOS E REGRAS */}
       {step === 3 && (
-        <div className="card space-y-4">
+        <div className="panel space-y-4">
           <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2 pb-2 border-b border-slate-100">
             Definir Tabela de Preços e Regras de Uso
           </h3>
 
           <div className="space-y-3">
             {LOCKER_SIZES.map((size) => (
-              <div key={size} className="p-3 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
+              <div key={size} className="p-3 rounded-box bg-slate-50 border border-slate-100 space-y-2">
                 <span className="text-xs font-bold text-slate-800">
                   Tamanho {lockerSizeLabels[size]}
                 </span>
@@ -469,7 +469,7 @@ export default function CreateLocationPage() {
                       <input
                         type="number"
                         min="1"
-                        className="input text-xs"
+                        className="input w-full text-xs"
                         value={draft.pricesBrl[size][period]}
                         onChange={(e) => {
                           const val = e.target.value;
@@ -495,7 +495,7 @@ export default function CreateLocationPage() {
           <div>
             <label className="text-xs font-bold text-slate-700 block mb-1">Regras de Utilização do Espaço</label>
             <textarea
-              className="input text-xs min-h-[60px]"
+              className="textarea w-full text-xs min-h-[60px]"
               value={draft.usageRules}
               onChange={(e) => setDraft((p) => ({ ...p, usageRules: e.target.value }))}
             />
@@ -505,14 +505,14 @@ export default function CreateLocationPage() {
             <button
               type="button"
               onClick={() => setStep(2)}
-              className="btn-secondary flex-1 py-3 text-xs font-bold flex items-center justify-center gap-1.5"
+              className="btn flex-1 py-3 text-xs font-bold flex items-center justify-center gap-1.5"
             >
               <ArrowLeft className="w-4 h-4" /> Voltar
             </button>
             <button
               type="button"
               onClick={goToNextStep}
-              className="btn-primary flex-1 py-3 text-xs font-bold flex items-center justify-center gap-1.5"
+              className="btn btn-primary flex-1 py-3 text-xs font-bold flex items-center justify-center gap-1.5"
             >
               <span>Ver Prévia</span>
               <ArrowRight className="w-4 h-4" />
@@ -524,7 +524,7 @@ export default function CreateLocationPage() {
       {/* ETAPA 4 — PRÉVIA E ENVIO */}
       {step === 4 && (
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="card space-y-3 border-brand-200 bg-brand-50/20">
+          <div className="panel space-y-3 border-brand-200 bg-brand-50/20">
             <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2 pb-2 border-b border-brand-100">
               <ShieldCheck className="w-4 h-4 text-brand-600" /> Prévia do Ponto antes do Envio
             </h3>
@@ -552,7 +552,7 @@ export default function CreateLocationPage() {
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-white border border-slate-200 text-xs">
+            <div className="p-3 rounded-field bg-white border border-slate-200 text-xs">
               <span className="font-bold text-slate-700 block mb-1">Divisão de Receitas (Modelo MVP):</span>
               <p className="text-slate-500">
                 • <strong>90%</strong> do valor de cada aluguel vai diretamente para a sua organização.
@@ -566,14 +566,14 @@ export default function CreateLocationPage() {
               type="button"
               disabled={pending}
               onClick={() => setStep(3)}
-              className="btn-secondary flex-1 py-3.5 text-xs font-bold"
+              className="btn flex-1 py-3.5 text-xs font-bold"
             >
               <ArrowLeft className="w-4 h-4 inline mr-1" /> Ajustar Preços
             </button>
             <button
               type="submit"
               disabled={pending}
-              className="btn-primary flex-1 py-3.5 text-xs font-bold shadow-lg shadow-brand-600/25"
+              className="btn btn-primary flex-1 py-3.5 text-xs font-bold shadow-lg shadow-brand-600/25"
             >
               {pending ? <Spinner /> : <Check className="w-4 h-4 inline mr-1" />}
               Submeter para Aprovação

@@ -73,7 +73,7 @@ export default function CheckoutPage() {
       )}
 
       {/* Regras e Instruções */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-2 text-xs text-slate-600">
+      <div className="rounded-box border border-slate-200 bg-white p-4 space-y-2 text-xs text-slate-600">
         <h4 className="font-bold text-slate-900 flex items-center gap-1.5">
           <ShieldCheck className="w-4 h-4 text-brand-600" /> Instruções de uso e horários
         </h4>
@@ -86,7 +86,7 @@ export default function CheckoutPage() {
         type="button"
         disabled={pending || !plan}
         onClick={() => void handleConfirm()}
-        className="btn-primary w-full py-4 text-base font-black shadow-lg shadow-brand-600/25 active:scale-[0.99] transition-all disabled:opacity-50"
+        className="btn btn-primary w-full py-4 text-base font-black shadow-lg shadow-brand-600/25 active:scale-[0.99] transition-all disabled:opacity-50"
       >
         {pending ? <Spinner /> : <CheckCircle2 className="w-5 h-5 inline mr-2" />}
         Confirmar Reserva

@@ -32,22 +32,18 @@ export default function ExplorePage() {
         title="Explorar lockers"
         subtitle="Encontre guarda-volumes disponíveis no campus da UFRJ"
         actions={
-          <div className="inline-flex rounded-xl border border-slate-200 bg-white p-0.5 text-xs font-semibold shadow-xs">
+          <div className="join">
             <button
               type="button"
               onClick={() => setViewMode('list')}
-              className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 transition-all ${
-                viewMode === 'list' ? 'bg-brand-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
+              className={`btn join-item btn-sm ${viewMode === 'list' ? 'btn-primary' : ''}`}
             >
               <List className="h-3.5 w-3.5" /> Lista
             </button>
             <button
               type="button"
               onClick={() => setViewMode('map')}
-              className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 transition-all ${
-                viewMode === 'map' ? 'bg-brand-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
+              className={`btn join-item btn-sm ${viewMode === 'map' ? 'btn-primary' : ''}`}
             >
               <Map className="h-3.5 w-3.5" /> Mapa
             </button>
@@ -56,18 +52,18 @@ export default function ExplorePage() {
       />
 
       {/* Barra de Filtros */}
-      <div className="card space-y-2.5">
-        <div className="relative">
-          <Search className="pointer-events-none absolute top-2.5 left-3 h-4 w-4 text-slate-400" />
+      <div className="panel space-y-2.5">
+        <label className="input w-full">
+          <Search className="h-4 w-4 opacity-50" />
           <input
-            className="input pl-9"
+            className="grow"
             placeholder="Buscar prédio, bloco ou laboratório..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-        </div>
+        </label>
         <div className="grid grid-cols-2 gap-2">
-          <select className="input" value={campus} onChange={(e) => setCampus(e.target.value)}>
+          <select className="select w-full" value={campus} onChange={(e) => setCampus(e.target.value)}>
             <option value="">Todos os campi</option>
             {CAMPUS_OPTIONS.map((c) => (
               <option key={c} value={c}>
@@ -75,7 +71,7 @@ export default function ExplorePage() {
               </option>
             ))}
           </select>
-          <select className="input" value={size} onChange={(e) => setSize(e.target.value as LockerSize | '')}>
+          <select className="select w-full" value={size} onChange={(e) => setSize(e.target.value as LockerSize | '')}>
             <option value="">Qualquer tamanho</option>
             {LOCKER_SIZES.map((s) => (
               <option key={s} value={s}>
@@ -89,7 +85,7 @@ export default function ExplorePage() {
             type="checkbox"
             checked={onlyAvailable}
             onChange={(e) => setOnlyAvailable(e.target.checked)}
-            className="rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+            className="checkbox checkbox-sm checkbox-primary"
           />
           Mostrar apenas pontos com vagas disponíveis
         </label>

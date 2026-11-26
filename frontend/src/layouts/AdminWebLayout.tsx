@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import {
   AlertOctagon,
+  ArrowLeftRight,
   Building2,
   Handshake,
   LayoutDashboard,
@@ -24,40 +25,34 @@ export default function AdminWebLayout() {
   const { user, logout } = useAuth();
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
-      <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col bg-slate-900 text-slate-200">
-        <Link to="/admin/dashboard" className="flex items-center gap-2 px-5 py-5 font-bold text-white">
-          <Lock className="h-5 w-5 text-brand-500" /> UniLocker UFRJ
+    <div className="flex min-h-screen bg-base-200">
+      <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col border-r border-base-300 bg-base-100">
+        <Link to="/admin/dashboard" className="flex h-14 items-center gap-2 border-b border-base-300 px-5 font-semibold">
+          <Lock className="h-5 w-5 text-primary" /> UniLocker <span className="font-normal text-base-content/60">UFRJ</span>
         </Link>
-        <p className="px-5 pb-2 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Administração</p>
-        <nav className="flex flex-1 flex-col gap-0.5 px-3">
+        <ul className="menu w-full flex-1 gap-0.5 px-3 py-4">
+          <li className="menu-title text-xs">Administração</li>
           {navItems.map(({ to, label, icon: Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                `flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium ${
-                  isActive ? 'bg-slate-800 text-white' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-100'
-                }`
-              }
-            >
-              <Icon className="h-4 w-4" />
-              {label}
-            </NavLink>
+            <li key={to}>
+              <NavLink to={to} className={({ isActive }) => (isActive ? 'menu-active bg-primary/10! font-medium text-primary!' : '')}>
+                <Icon className="h-4 w-4" />
+                {label}
+              </NavLink>
+            </li>
           ))}
-        </nav>
-        <div className="space-y-3 border-t border-slate-800 p-4">
-          <Link to="/app/explore" className="block text-xs text-slate-400 hover:text-white">
-            Ir para o app do usuário →
-          </Link>
-          <button
-            type="button"
-            onClick={logout}
-            className="flex items-center gap-2 text-xs text-slate-400 hover:text-white"
-          >
-            <LogOut className="h-3.5 w-3.5" /> Sair ({user?.name})
-          </button>
-        </div>
+        </ul>
+        <ul className="menu w-full border-t border-base-300 p-3 text-sm">
+          <li>
+            <Link to="/app/explore">
+              <ArrowLeftRight className="h-4 w-4" /> App do usuário
+            </Link>
+          </li>
+          <li>
+            <button type="button" onClick={logout}>
+              <LogOut className="h-4 w-4" /> Sair ({user?.name})
+            </button>
+          </li>
+        </ul>
       </aside>
 
       <main className="min-w-0 flex-1 p-6">

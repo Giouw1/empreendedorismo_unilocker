@@ -26,7 +26,7 @@ export default function PartnerReservationsPage() {
         subtitle="Acompanhamento operacional dos compartimentos alugados"
         actions={
           <select
-            className="input w-44"
+            className="select w-44"
             value={status}
             onChange={(e) => setStatus(e.target.value as ReservationStatus | '')}
           >
@@ -45,7 +45,7 @@ export default function PartnerReservationsPage() {
       {!loading && !reservations?.length && <EmptyState title="Nenhum aluguel encontrado" />}
 
       {!!reservations?.length && (
-        <div className="card overflow-x-auto p-0">
+        <div className="panel overflow-x-auto p-0">
           <table className="table">
             <thead>
               <tr>

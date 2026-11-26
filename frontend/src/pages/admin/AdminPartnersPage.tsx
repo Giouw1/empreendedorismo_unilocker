@@ -26,6 +26,7 @@ export default function AdminPartnersPage() {
           <label className="inline-flex items-center gap-2 text-xs font-medium text-slate-700">
             <input
               type="checkbox"
+              className="checkbox checkbox-sm checkbox-primary"
               checked={includeAll}
               onChange={(e) => setIncludeAll(e.target.checked)}
             />
@@ -39,7 +40,7 @@ export default function AdminPartnersPage() {
       {!loading && !partners?.length && <EmptyState title="Nenhuma solicitação pendente" />}
 
       {!!partners?.length && (
-        <div className="card overflow-x-auto p-0">
+        <div className="panel overflow-x-auto p-0">
           <table className="table">
             <thead>
               <tr>
@@ -70,7 +71,7 @@ export default function AdminPartnersPage() {
                           type="button"
                           disabled={action.pending}
                           onClick={() => void handleReview(p.id, true)}
-                          className="btn-success px-2.5 py-1 text-xs"
+                          className="btn btn-success px-2.5 py-1 text-xs"
                         >
                           {action.pending && <Spinner />} Aprovar
                         </button>
@@ -80,7 +81,7 @@ export default function AdminPartnersPage() {
                           type="button"
                           disabled={action.pending}
                           onClick={() => void handleReview(p.id, false)}
-                          className="btn-danger px-2.5 py-1 text-xs"
+                          className="btn btn-error px-2.5 py-1 text-xs"
                         >
                           Recusar
                         </button>

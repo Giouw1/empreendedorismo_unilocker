@@ -61,7 +61,7 @@ export default function LocationDetailPage() {
       </Link>
 
       {/* Imagem de Capa com Fallback Limpo e Galeria */}
-      <div className="relative rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+      <div className="relative rounded-box overflow-hidden bg-slate-100 border border-slate-200">
         {currentPhoto && !imgError ? (
           <img
             src={currentPhoto}
@@ -77,7 +77,7 @@ export default function LocationDetailPage() {
         )}
 
         {location.photoUrls && location.photoUrls.length > 1 && (
-          <div className="absolute bottom-2 right-2 flex gap-1 bg-black/50 p-1 rounded-lg backdrop-blur-xs">
+          <div className="absolute bottom-2 right-2 flex gap-1 bg-black/50 p-1 rounded-field backdrop-blur-xs">
             {location.photoUrls.map((_, idx) => (
               <button
                 key={idx}
@@ -96,7 +96,7 @@ export default function LocationDetailPage() {
       </div>
 
       {/* Dados do Ponto */}
-      <div className="card space-y-2.5">
+      <div className="panel space-y-2.5">
         <div className="flex items-start justify-between gap-2">
           <div>
             <h1 className="text-lg font-black text-slate-900 leading-snug">{location.name}</h1>
@@ -121,7 +121,7 @@ export default function LocationDetailPage() {
       </div>
 
       {/* Seleção de tamanho e período */}
-      <div className="card space-y-3">
+      <div className="panel space-y-3">
         <h2 className="text-xs font-black uppercase tracking-wider text-slate-700">
           1. Escolha o tamanho do compartimento
         </h2>
@@ -137,7 +137,7 @@ export default function LocationDetailPage() {
                   setSelectedSize(size);
                   setSelectedLocker(null);
                 }}
-                className={`rounded-2xl border-2 p-3 text-left transition-all ${
+                className={`rounded-box border-2 p-3 text-left transition-all ${
                   active
                     ? 'border-brand-600 bg-brand-50/60 shadow-sm'
                     : 'border-slate-200 bg-white hover:border-slate-300'
@@ -168,7 +168,7 @@ export default function LocationDetailPage() {
                 key={period}
                 type="button"
                 onClick={() => setSelectedPeriod(period)}
-                className={`rounded-2xl border-2 p-3 text-left transition-all ${
+                className={`rounded-box border-2 p-3 text-left transition-all ${
                   active
                     ? 'border-brand-600 bg-brand-50/60 shadow-sm'
                     : 'border-slate-200 bg-white hover:border-slate-300'
@@ -217,7 +217,7 @@ export default function LocationDetailPage() {
         )}
       </div>
 
-      <div className="card space-y-1 text-xs text-slate-600 bg-amber-50/40 border-amber-200/80">
+      <div className="panel space-y-1 text-xs text-slate-600 bg-amber-50/40 border-amber-200/80">
         <p className="flex items-center gap-1.5 font-bold text-amber-900">
           <ShieldAlert className="h-4 w-4 text-amber-600 shrink-0" /> Regras de utilização do espaço
         </p>
@@ -228,7 +228,7 @@ export default function LocationDetailPage() {
         type="button"
         disabled={availableForSize === 0 || !selectedPlan}
         onClick={handleProceed}
-        className="btn-primary w-full py-3.5 text-sm font-bold shadow-lg shadow-brand-600/20 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        className="btn btn-primary w-full py-3.5 text-sm font-bold shadow-lg shadow-brand-600/20 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {availableForSize === 0
           ? 'Sem vagas livres neste tamanho'

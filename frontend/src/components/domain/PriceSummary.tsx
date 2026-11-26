@@ -36,7 +36,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   };
 
   return (
-    <div className={`bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-4 ${className}`}>
+    <div className={`bg-slate-50 border border-slate-200 rounded-box p-5 space-y-4 ${className}`}>
       <div className="flex items-center justify-between pb-3 border-b border-slate-200">
         <h4 className="font-semibold text-slate-800 text-sm flex items-center gap-2">
           <Tag className="w-4 h-4 text-brand-600" /> Resumo da Contratação

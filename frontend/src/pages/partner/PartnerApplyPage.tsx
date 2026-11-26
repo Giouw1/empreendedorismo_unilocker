@@ -46,22 +46,22 @@ export default function PartnerApplyPage() {
       {submitted || user?.partnerStatus === 'PENDING' ? (
         <SuccessAlert message="Solicitação enviada! Assim que a administração aprovar seu espaço, o Painel do Parceiro ficará disponível." />
       ) : (
-        <form onSubmit={(e) => void handleSubmit(e)} className="card space-y-3">
+        <form onSubmit={(e) => void handleSubmit(e)} className="panel space-y-3">
           <ErrorAlert message={error} />
           <div>
-            <label className="label">Nome do espaço / organização</label>
+            <label className="field-label">Nome do espaço / organização</label>
             <input
               required
-              className="input"
+              className="input w-full"
               placeholder="Ex.: Laboratório de Robótica — CT"
               value={organizationName}
               onChange={(e) => setOrganizationName(e.target.value)}
             />
           </div>
           <div>
-            <label className="label">Categoria</label>
+            <label className="field-label">Categoria</label>
             <select
-              className="input"
+              className="select w-full"
               value={organizationType}
               onChange={(e) => setOrganizationType(e.target.value)}
             >
@@ -72,24 +72,24 @@ export default function PartnerApplyPage() {
             </select>
           </div>
           <div>
-            <label className="label">Responsável</label>
+            <label className="field-label">Responsável</label>
             <input
               required
-              className="input"
+              className="input w-full"
               value={responsibleName}
               onChange={(e) => setResponsibleName(e.target.value)}
             />
           </div>
           <div>
-            <label className="label">Telefone / WhatsApp</label>
+            <label className="field-label">Telefone / WhatsApp</label>
             <input
               required
-              className="input"
+              className="input w-full"
               value={contactPhone}
               onChange={(e) => setContactPhone(e.target.value)}
             />
           </div>
-          <button type="submit" disabled={pending} className="btn-primary w-full text-xs">
+          <button type="submit" disabled={pending} className="btn btn-primary w-full text-xs">
             {pending && <Spinner />} Enviar solicitação de parceria
           </button>
         </form>

@@ -18,11 +18,11 @@ export default function MyReservationsPage() {
         subtitle="Acompanhe seus lockers ativos e histórico de aluguéis"
       />
 
-      <div className="grid grid-cols-2 rounded-2xl border border-slate-200 bg-white p-1 text-xs font-bold shadow-xs">
+      <div className="grid grid-cols-2 rounded-box border border-slate-200 bg-white p-1 text-xs font-bold shadow-xs">
         <button
           type="button"
           onClick={() => setTab('active')}
-          className={`rounded-xl py-2.5 transition-all ${
+          className={`rounded-field py-2.5 transition-all ${
             tab === 'active'
               ? 'bg-brand-600 text-white shadow-xs'
               : 'text-slate-600 hover:text-slate-900'
@@ -33,7 +33,7 @@ export default function MyReservationsPage() {
         <button
           type="button"
           onClick={() => setTab('history')}
-          className={`rounded-xl py-2.5 transition-all ${
+          className={`rounded-field py-2.5 transition-all ${
             tab === 'history'
               ? 'bg-brand-600 text-white shadow-xs'
               : 'text-slate-600 hover:text-slate-900'
@@ -51,7 +51,7 @@ export default function MyReservationsPage() {
           title={tab === 'active' ? 'Nenhum locker ativo no momento' : 'Histórico de aluguéis vazio'}
           description="Encontre pontos com vagas disponíveis pela UFRJ na aba Explorar."
           action={
-            <Link to="/app/explore" className="btn-primary mt-3 text-xs font-bold px-4 py-2">
+            <Link to="/app/explore" className="btn btn-primary mt-3 text-xs font-bold px-4 py-2">
               Explorar lockers
             </Link>
           }

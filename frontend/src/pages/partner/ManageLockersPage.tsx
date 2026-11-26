@@ -57,11 +57,11 @@ export default function ManageLockersPage() {
         title="Gerenciar compartimentos"
         subtitle={location?.name ?? 'Controle de disponibilidade, bloqueios e manutenção'}
         actions={
-          <div className="inline-flex rounded-xl border border-slate-200 bg-white p-0.5 text-xs font-semibold shadow-xs">
+          <div className="inline-flex rounded-field border border-slate-200 bg-white p-0.5 text-xs font-semibold shadow-xs">
             <button
               type="button"
               onClick={() => setViewMode('grid')}
-              className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 transition-all ${
+              className={`inline-flex items-center gap-1 rounded-field px-2.5 py-1.5 transition-all ${
                 viewMode === 'grid' ? 'bg-brand-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -70,7 +70,7 @@ export default function ManageLockersPage() {
             <button
               type="button"
               onClick={() => setViewMode('table')}
-              className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 transition-all ${
+              className={`inline-flex items-center gap-1 rounded-field px-2.5 py-1.5 transition-all ${
                 viewMode === 'table' ? 'bg-brand-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -83,12 +83,12 @@ export default function ManageLockersPage() {
       <ErrorAlert message={error ?? action.error} onRetry={() => void reload()} />
 
       {/* Formulário de Adição Rápida */}
-      <form onSubmit={(e) => void handleAdd(e)} className="card flex flex-wrap items-end gap-2 bg-slate-50 border-slate-200">
+      <form onSubmit={(e) => void handleAdd(e)} className="panel flex flex-wrap items-end gap-2 bg-slate-50 border-slate-200">
         <div className="flex-1 min-w-[140px]">
           <label className="text-xs font-bold text-slate-700 block mb-1">Novo compartimento</label>
           <input
             required
-            className="input text-xs uppercase"
+            className="input w-full text-xs uppercase"
             placeholder="Código (ex.: A-07)"
             value={code}
             onChange={(e) => setCode(e.target.value)}
@@ -96,7 +96,7 @@ export default function ManageLockersPage() {
         </div>
         <div className="w-32">
           <label className="text-xs font-bold text-slate-700 block mb-1">Tamanho</label>
-          <select className="input text-xs" value={size} onChange={(e) => setSize(e.target.value as LockerSize)}>
+          <select className="select w-full text-xs" value={size} onChange={(e) => setSize(e.target.value as LockerSize)}>
             {LOCKER_SIZES.map((s) => (
               <option key={s} value={s}>
                 {lockerSizeLabels[s]}
@@ -107,7 +107,7 @@ export default function ManageLockersPage() {
         <button
           type="submit"
           disabled={action.pending || !code.trim()}
-          className="btn-primary text-xs font-bold py-2.5 px-4 flex items-center gap-1"
+          className="btn btn-primary text-xs font-bold py-2.5 px-4 flex items-center gap-1"
         >
           {action.pending ? <Spinner /> : <Plus className="w-4 h-4" />} Adicionar Armário
         </button>
@@ -171,7 +171,7 @@ export default function ManageLockersPage() {
         </div>
       ) : (
         /* Visualização em Tabela */
-        <div className="card overflow-x-auto p-0">
+        <div className="panel overflow-x-auto p-0">
           <table className="table text-xs">
             <thead>
               <tr>
@@ -201,7 +201,7 @@ export default function ManageLockersPage() {
                               type="button"
                               disabled={action.pending}
                               onClick={() => void handleStatus(lk.id, 'AVAILABLE')}
-                              className="btn-secondary px-2 py-1 text-xs"
+                              className="btn px-2 py-1 text-xs"
                             >
                               Disponibilizar
                             </button>
@@ -211,7 +211,7 @@ export default function ManageLockersPage() {
                               type="button"
                               disabled={action.pending}
                               onClick={() => void handleStatus(lk.id, 'MAINTENANCE')}
-                              className="btn-secondary px-2 py-1 text-xs"
+                              className="btn px-2 py-1 text-xs"
                             >
                               Manutenção
                             </button>
@@ -221,7 +221,7 @@ export default function ManageLockersPage() {
                               type="button"
                               disabled={action.pending}
                               onClick={() => void handleStatus(lk.id, 'BLOCKED')}
-                              className="btn-secondary px-2 py-1 text-xs"
+                              className="btn px-2 py-1 text-xs"
                             >
                               Bloquear
                             </button>

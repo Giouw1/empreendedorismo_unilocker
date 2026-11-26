@@ -45,15 +45,15 @@ export default function SupportPage() {
     <div className="space-y-4">
       <PageHeader title="Ajuda e suporte" subtitle="Relate problemas com compartimentos ou aluguéis" />
 
-      <form onSubmit={(e) => void handleSubmit(e)} className="card space-y-3">
+      <form onSubmit={(e) => void handleSubmit(e)} className="panel space-y-3">
         <h2 className="text-sm font-bold">Abrir novo chamado</h2>
         <ErrorAlert message={submitError} />
         <SuccessAlert message={successMsg} />
 
         <div>
-          <label className="label">Categoria</label>
+          <label className="field-label">Categoria</label>
           <select
-            className="input"
+            className="select w-full"
             value={category}
             onChange={(e) => setCategory(e.target.value as TicketCategory)}
           >
@@ -66,9 +66,9 @@ export default function SupportPage() {
         </div>
 
         <div>
-          <label className="label">ID da reserva (opcional)</label>
+          <label className="field-label">ID da reserva (opcional)</label>
           <input
-            className="input"
+            className="input w-full"
             placeholder="Ex.: res-cintra-active"
             value={reservationId}
             onChange={(e) => setReservationId(e.target.value)}
@@ -76,18 +76,18 @@ export default function SupportPage() {
         </div>
 
         <div>
-          <label className="label">Descrição do ocorrido</label>
+          <label className="field-label">Descrição do ocorrido</label>
           <textarea
             required
             rows={3}
-            className="input"
+            className="textarea w-full"
             placeholder="Descreva o que aconteceu..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
         </div>
 
-        <button type="submit" disabled={pending} className="btn-primary w-full text-xs">
+        <button type="submit" disabled={pending} className="btn btn-primary w-full text-xs">
           {pending && <Spinner />} Enviar solicitação
         </button>
       </form>
@@ -98,14 +98,14 @@ export default function SupportPage() {
         {loading && <Loading />}
         {!loading && !tickets?.length && <EmptyState title="Nenhum chamado aberto" />}
         {tickets?.map((tk) => (
-          <div key={tk.id} className="card space-y-1.5 text-xs">
+          <div key={tk.id} className="panel space-y-1.5 text-xs">
             <div className="flex items-center justify-between">
               <strong>{ticketCategoryLabels[tk.category]}</strong>
               <Badge tone={ticketTone(tk.status)}>{ticketStatusLabels[tk.status]}</Badge>
             </div>
             <p className="text-slate-600">{tk.description}</p>
             {tk.adminNotes && (
-              <p className="rounded-lg bg-slate-100 p-2 text-slate-700">
+              <p className="rounded-field bg-slate-100 p-2 text-slate-700">
                 <strong>Resposta da administração:</strong> {tk.adminNotes}
               </p>
             )}
