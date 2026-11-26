@@ -69,6 +69,10 @@ export interface LocationRecord {
   accessInstructions: string;
   usageRules: string;
   photoUrls: string[];
+  /** Nome público do parceiro responsável pelo ponto e contato direto. */
+  hostName: string;
+  contactPhone: string;
+  contactEmail: string;
   status: LocationStatus;
   createdAt: string;
 }
@@ -313,8 +317,10 @@ export class DemoFixtures {
           'Proibido armazenar alimentos perecíveis ou materiais inflamáveis. Retire seus pertences até o horário de fechamento.',
         photoUrls: [
           '/locations/eba-reitoria.jpg',
-          'https://upload.wikimedia.org/wikipedia/commons/c/c0/Reitoria_e_FAU_-_UFRJ.jpg',
         ],
+        hostName: 'Laboratório de Artes Modernas — Escola de Belas Artes (EBA/UFRJ)',
+        contactPhone: '(21) 99999-0001',
+        contactEmail: 'lab.artes@eba.ufrj.br',
         status: 'ACTIVE',
         createdAt: iso(-55 * DAY),
       },
@@ -335,15 +341,17 @@ export class DemoFixtures {
           'Vá até a entrada principal do Bloco A do CT. No térreo, siga pelo corredor à direita da recepção. Os lockers estão no hall de convivência.',
         usageRules:
           'Uso exclusivo para pertences pessoais. Em caso de vencimento, o compartimento permanece retido até regularização.',
-        photoUrls: [
-          '/locations/ct-fachada.jpg',
-        ],
+        photoUrls: ['/locations/ct-fachada.jpg'],
+        hostName: 'Centro Acadêmico de Engenharia (CAEng) — Escola Politécnica',
+        contactPhone: '(21) 99999-0002',
+        contactEmail: 'caeng@poli.ufrj.br',
         status: 'ACTIVE',
         createdAt: iso(-75 * DAY),
       },
       {
         id: 'loc-aulario-pv',
-        partnerId: 'p-aulario-pv',
+        // Ponto operado pelo Prof. Guilherme; a Coordenação do Aulário segue como parceira local do espaço.
+        partnerId: 'p-guilherme',
         name: 'Aulário — UFRJ Praia Vermelha',
         campus: 'Praia Vermelha',
         building: 'Pavilhão de Aulas (Aulário)',
@@ -360,10 +368,60 @@ export class DemoFixtures {
           'Uso exclusivo para guarda de pertences acadêmicos e pessoais. Manter o compartimento trancado durante o período.',
         photoUrls: [
           '/locations/aulario-praia-vermelha.jpg',
-          'https://upload.wikimedia.org/wikipedia/commons/1/13/UFRJ_-_Campus_da_Praia_Vermelha.jpg',
         ],
+        hostName: 'Coordenação do Aulário — Campus Praia Vermelha',
+        contactPhone: '(21) 99999-0005',
+        contactEmail: 'aulario@pv.ufrj.br',
         status: 'ACTIVE',
         createdAt: iso(-20 * DAY),
+      },
+      {
+        id: 'loc-ie-pv',
+        partnerId: 'p-guilherme',
+        name: 'Instituto de Economia — UFRJ Praia Vermelha',
+        campus: 'Praia Vermelha',
+        building: 'Instituto de Economia (IE)',
+        block: 'Prédio do IE',
+        floor: 'Térreo',
+        roomOrCorridor: 'Corredor da secretaria de graduação',
+        reference: 'Ao lado da secretaria de graduação do IE',
+        latitude: -22.9547,
+        longitude: -43.1739,
+        openingHours: 'Seg a Sex, 08:00 às 21:00',
+        accessInstructions:
+          'Entre pelo portão principal do campus (Av. Pasteur, 250) e siga até o prédio do Instituto de Economia. No térreo, os lockers ficam no corredor da secretaria de graduação.',
+        usageRules:
+          'Uso para pertences pessoais e material de estudo. Proibido guardar alimentos perecíveis. Retire seus itens até o fim do período contratado.',
+        photoUrls: ['/locations/ie-praia-vermelha.jpg'],
+        hostName: 'Instituto de Economia (IE/UFRJ)',
+        contactPhone: '(21) 99999-0006',
+        contactEmail: 'lockers.ie@ie.ufrj.br',
+        status: 'ACTIVE',
+        createdAt: iso(-12 * DAY),
+      },
+      {
+        id: 'loc-ifcs',
+        partnerId: 'p-guilherme',
+        name: 'IFCS — Largo de São Francisco',
+        campus: 'Centro',
+        building: 'Instituto de Filosofia e Ciências Sociais (IFCS)',
+        block: 'Prédio histórico',
+        floor: 'Térreo',
+        roomOrCorridor: 'Hall de entrada, à direita da portaria',
+        reference: 'Largo de São Francisco de Paula, 1 — Centro',
+        latitude: -22.9053,
+        longitude: -43.1818,
+        openingHours: 'Seg a Sex, 07:30 às 22:00',
+        accessInstructions:
+          'Entre pela portaria principal do IFCS no Largo de São Francisco de Paula. Os lockers ficam no hall de entrada, à direita da portaria.',
+        usageRules:
+          'Uso exclusivo para pertences pessoais. O prédio é tombado: não cole adesivos nem fixe objetos nos compartimentos.',
+        photoUrls: ['/locations/ifcs-largo-sao-francisco.jpg'],
+        hostName: 'Instituto de Filosofia e Ciências Sociais (IFCS/UFRJ)',
+        contactPhone: '(21) 99999-0007',
+        contactEmail: 'lockers.ifcs@ifcs.ufrj.br',
+        status: 'ACTIVE',
+        createdAt: iso(-8 * DAY),
       },
       {
         id: 'loc-letras',
@@ -382,6 +440,9 @@ export class DemoFixtures {
           'Suba a rampa principal da Faculdade de Letras até o 1º andar. A sala do CALet fica em frente à cantina.',
         usageRules: 'Ideal para eventos e festas universitárias.',
         photoUrls: ['/locations/letras-fachada.jpg'],
+        hostName: 'Centro Acadêmico de Letras (CALet)',
+        contactPhone: '(21) 99999-0003',
+        contactEmail: 'caletras@letras.ufrj.br',
         status: 'PENDING_APPROVAL',
         createdAt: iso(-1 * DAY),
       },
@@ -421,17 +482,30 @@ export class DemoFixtures {
       mk('loc-aulario-pv', 'PV-04', 'MEDIUM'),
       mk('loc-aulario-pv', 'PV-05', 'LARGE'),
       mk('loc-aulario-pv', 'PV-06', 'LARGE'),
+      mk('loc-ie-pv', 'IE-01', 'SMALL'),
+      mk('loc-ie-pv', 'IE-02', 'SMALL', 'OCCUPIED'),
+      mk('loc-ie-pv', 'IE-03', 'MEDIUM'),
+      mk('loc-ie-pv', 'IE-04', 'MEDIUM'),
+      mk('loc-ie-pv', 'IE-05', 'LARGE'),
+      mk('loc-ifcs', 'FC-01', 'SMALL'),
+      mk('loc-ifcs', 'FC-02', 'SMALL'),
+      mk('loc-ifcs', 'FC-03', 'MEDIUM', 'OCCUPIED'),
+      mk('loc-ifcs', 'FC-04', 'MEDIUM'),
+      mk('loc-ifcs', 'FC-05', 'LARGE'),
       mk('loc-letras', 'C-01', 'SMALL'),
       mk('loc-letras', 'C-02', 'SMALL'),
       mk('loc-letras', 'C-03', 'MEDIUM'),
       mk('loc-letras', 'C-04', 'LARGE'),
     ];
 
+    // Mínimos: diário R$ 5, semanal R$ 25, mensal R$ 100. Planos longos sempre custam menos por dia.
     const table: Record<string, Record<LockerSize, [number, number, number]>> = {
-      'loc-eba': { SMALL: [500, 2500, 8000], MEDIUM: [800, 4000, 12000], LARGE: [1200, 6000, 18000] },
-      'loc-ct': { SMALL: [600, 3000, 9000], MEDIUM: [900, 4500, 14000], LARGE: [1300, 6500, 20000] },
-      'loc-aulario-pv': { SMALL: [600, 3000, 9000], MEDIUM: [900, 4500, 14000], LARGE: [1300, 6500, 20000] },
-      'loc-letras': { SMALL: [400, 2000, 7000], MEDIUM: [700, 3500, 11000], LARGE: [1000, 5000, 16000] },
+      'loc-eba': { SMALL: [500, 2500, 10000], MEDIUM: [800, 4000, 14000], LARGE: [1200, 6000, 20000] },
+      'loc-ct': { SMALL: [600, 3000, 10000], MEDIUM: [900, 4500, 15000], LARGE: [1300, 6500, 21000] },
+      'loc-aulario-pv': { SMALL: [600, 3000, 10000], MEDIUM: [900, 4500, 15000], LARGE: [1300, 6500, 21000] },
+      'loc-ie-pv': { SMALL: [600, 3000, 10000], MEDIUM: [900, 4500, 15000], LARGE: [1300, 6500, 21000] },
+      'loc-ifcs': { SMALL: [700, 3200, 11000], MEDIUM: [1000, 4800, 16000], LARGE: [1400, 7000, 22000] },
+      'loc-letras': { SMALL: [500, 2500, 10000], MEDIUM: [700, 3500, 12000], LARGE: [1000, 5000, 16000] },
     };
     const periods: RentalPeriod[] = ['DAILY', 'WEEKLY', 'MONTHLY'];
     this.pricingPlans = [];
@@ -475,6 +549,32 @@ export class DemoFixtures {
         status: 'Active',
         totalPriceCents: 2500,
         createdAt: iso(-1 * DAY),
+      },
+      {
+        id: 'res-joaquim-pending',
+        userId: 'u-joaquim',
+        locationId: 'loc-ie-pv',
+        lockerId: 'lk-ie-pv-ie-02',
+        size: 'SMALL',
+        period: 'DAILY',
+        startTime: iso(-40 * 60 * 1000),
+        endTime: iso(-40 * 60 * 1000 + DAY),
+        status: 'PendingConfirmation',
+        totalPriceCents: 600,
+        createdAt: iso(-40 * 60 * 1000),
+      },
+      {
+        id: 'res-cintra-pending',
+        userId: 'u-cintra',
+        locationId: 'loc-ifcs',
+        lockerId: 'lk-ifcs-fc-03',
+        size: 'MEDIUM',
+        period: 'WEEKLY',
+        startTime: iso(-15 * 60 * 1000),
+        endTime: iso(-15 * 60 * 1000 + 7 * DAY),
+        status: 'PendingConfirmation',
+        totalPriceCents: 4800,
+        createdAt: iso(-15 * 60 * 1000),
       },
       {
         id: 'res-cintra-old',
