@@ -336,8 +336,7 @@ export class DemoFixtures {
         usageRules:
           'Uso exclusivo para pertences pessoais. Em caso de vencimento, o compartimento permanece retido até regularização.',
         photoUrls: [
-          '/locations/ct-bloco-a.jpg',
-          'https://upload.wikimedia.org/wikipedia/commons/f/fa/Bloco_CT_-_UFRJ.jpg',
+          '/locations/ct-fachada.jpg',
         ],
         status: 'ACTIVE',
         createdAt: iso(-75 * DAY),
@@ -382,7 +381,7 @@ export class DemoFixtures {
         accessInstructions:
           'Suba a rampa principal da Faculdade de Letras até o 1º andar. A sala do CALet fica em frente à cantina.',
         usageRules: 'Ideal para eventos e festas universitárias.',
-        photoUrls: ['https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800'],
+        photoUrls: ['/locations/letras-fachada.jpg'],
         status: 'PENDING_APPROVAL',
         createdAt: iso(-1 * DAY),
       },
