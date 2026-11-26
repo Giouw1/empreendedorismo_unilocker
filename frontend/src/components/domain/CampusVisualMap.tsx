@@ -51,18 +51,18 @@ export const CampusVisualMap: React.FC<CampusVisualMapProps> = ({
 
   return (
     <div
-      className={`bg-slate-900 rounded-3xl overflow-hidden border border-slate-800 shadow-xl relative flex flex-col ${className}`}
+      className={`bg-slate-900 rounded-box overflow-hidden border border-slate-800 shadow-xl relative flex flex-col ${className}`}
     >
       {/* Barra de Seleção de Campus & Legenda */}
       <div className="p-4 bg-slate-950/80 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 z-10">
-        <div className="flex items-center gap-1.5 p-1 bg-slate-800/80 rounded-xl">
+        <div className="flex items-center gap-1.5 p-1 bg-slate-800/80 rounded-field">
           <button
             type="button"
             onClick={() => {
               setActiveTab('FUNDAO');
               setActivePin(null);
             }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3 py-1.5 rounded-field text-xs font-bold transition-all ${
               activeTab === 'FUNDAO'
                 ? 'bg-brand-600 text-white shadow-md'
                 : 'text-slate-400 hover:text-white'
@@ -76,7 +76,7 @@ export const CampusVisualMap: React.FC<CampusVisualMapProps> = ({
               setActiveTab('PRAIA_VERMELHA');
               setActivePin(null);
             }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3 py-1.5 rounded-field text-xs font-bold transition-all ${
               activeTab === 'PRAIA_VERMELHA'
                 ? 'bg-brand-600 text-white shadow-md'
                 : 'text-slate-400 hover:text-white'
@@ -261,7 +261,7 @@ export const CampusVisualMap: React.FC<CampusVisualMapProps> = ({
 
         {/* Card Flutuante com Resumo do Ponto Selecionado */}
         {activePin && (
-          <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 bg-white rounded-2xl p-4 shadow-2xl border border-slate-200 z-30 animate-in slide-in-from-bottom-4 duration-200">
+          <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 bg-white rounded-box p-4 shadow-2xl border border-slate-200 z-30 animate-in slide-in-from-bottom-4 duration-200">
             <div className="flex items-start justify-between">
               <div>
                 <AvailabilityBadge availableCount={activePin.availableCount} />
@@ -275,7 +275,7 @@ export const CampusVisualMap: React.FC<CampusVisualMapProps> = ({
               <button
                 type="button"
                 onClick={() => setActivePin(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                className="p-1 rounded-field text-slate-400 hover:text-slate-600 hover:bg-slate-100"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -287,7 +287,7 @@ export const CampusVisualMap: React.FC<CampusVisualMapProps> = ({
               </span>
               <Link
                 to={`/app/locations/${activePin.id}`}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-600 text-white text-xs font-bold hover:bg-brand-700 transition-all shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-field bg-brand-600 text-white text-xs font-bold hover:bg-brand-700 transition-all shadow-sm"
               >
                 <span>Ver Ponto</span>
                 <ArrowRight className="w-3.5 h-3.5" />

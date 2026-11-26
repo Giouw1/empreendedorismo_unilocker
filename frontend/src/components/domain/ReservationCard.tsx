@@ -49,7 +49,7 @@ export const ReservationCard: React.FC<ReservationCardProps> = ({ reservation, c
 
   return (
     <div
-      className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden shadow-sm hover:shadow-md ${
+      className={`bg-white rounded-box border transition-all duration-200 overflow-hidden shadow-sm hover:shadow-md ${
         isActive
           ? 'border-emerald-300 ring-2 ring-emerald-500/10'
           : 'border-slate-200/90'
@@ -59,7 +59,7 @@ export const ReservationCard: React.FC<ReservationCardProps> = ({ reservation, c
         {/* Cabeçalho */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-brand-100 text-brand-700 font-extrabold text-sm">
+            <span className="inline-flex items-center justify-center h-8 min-w-8 px-1.5 whitespace-nowrap rounded-field bg-primary/10 text-primary font-bold text-sm">
               {reservation.lockerCode || 'L'}
             </span>
             <div>
@@ -75,7 +75,7 @@ export const ReservationCard: React.FC<ReservationCardProps> = ({ reservation, c
         </div>
 
         {/* Localização */}
-        <div className="bg-slate-50 rounded-xl p-3 text-xs space-y-1 border border-slate-100">
+        <div className="bg-slate-50 rounded-field p-3 text-xs space-y-1 border border-slate-100">
           <div className="font-semibold text-slate-800 flex items-center gap-1.5">
             <MapPin className="w-3.5 h-3.5 text-brand-600 shrink-0" />
             <span className="truncate">{reservation.locationName}</span>
@@ -110,7 +110,7 @@ export const ReservationCard: React.FC<ReservationCardProps> = ({ reservation, c
         {isActive ? (
           <Link
             to={`/app/reservations/${reservation.id}`}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 shadow-sm shadow-emerald-600/20 active:scale-95 transition-all"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-field bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 shadow-sm shadow-emerald-600/20 active:scale-95 transition-all"
           >
             <KeyRound className="w-3.5 h-3.5" />
             <span>Ver reserva</span>

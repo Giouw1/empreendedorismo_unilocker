@@ -30,7 +30,7 @@ export default function AdminLocationsPage() {
         subtitle="Autorização de publicação e supervisão de capacidade"
         actions={
           <select
-            className="input w-52"
+            className="select w-52"
             value={status}
             onChange={(e) => setStatus(e.target.value as LocationStatus | '')}
           >
@@ -49,7 +49,7 @@ export default function AdminLocationsPage() {
       {!loading && !locations?.length && <EmptyState title="Nenhum ponto encontrado" />}
 
       {!!locations?.length && (
-        <div className="card overflow-x-auto p-0">
+        <div className="panel overflow-x-auto p-0">
           <table className="table">
             <thead>
               <tr>
@@ -84,7 +84,7 @@ export default function AdminLocationsPage() {
                           type="button"
                           disabled={action.pending}
                           onClick={() => void handleReview(loc.id, true)}
-                          className="btn-success px-2.5 py-1 text-xs"
+                          className="btn btn-success px-2.5 py-1 text-xs"
                         >
                           {action.pending && <Spinner />} Publicar
                         </button>
@@ -94,7 +94,7 @@ export default function AdminLocationsPage() {
                           type="button"
                           disabled={action.pending}
                           onClick={() => void handleReview(loc.id, false)}
-                          className="btn-danger px-2.5 py-1 text-xs"
+                          className="btn btn-error px-2.5 py-1 text-xs"
                         >
                           Suspender/Recusar
                         </button>

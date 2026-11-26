@@ -26,7 +26,7 @@ export default function AdminReservationsPage() {
         subtitle="Histórico e aluguéis ativos em toda a rede UFRJ"
         actions={
           <select
-            className="input w-48"
+            className="select w-48"
             value={status}
             onChange={(e) => setStatus(e.target.value as ReservationStatus | '')}
           >
@@ -45,7 +45,7 @@ export default function AdminReservationsPage() {
       {!loading && !reservations?.length && <EmptyState title="Nenhuma reserva encontrada" />}
 
       {!!reservations?.length && (
-        <div className="card overflow-x-auto p-0">
+        <div className="panel overflow-x-auto p-0">
           <table className="table">
             <thead>
               <tr>

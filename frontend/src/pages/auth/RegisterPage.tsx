@@ -23,7 +23,7 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-8">
-      <div className="card w-full max-w-sm space-y-4 p-6">
+      <div className="panel w-full max-w-sm space-y-4 p-6">
         <div className="text-center">
           <Link to="/" className="inline-flex items-center gap-2 font-bold text-brand-700">
             <Lock className="h-5 w-5" /> UniLocker UFRJ
@@ -35,35 +35,35 @@ export default function RegisterPage() {
 
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-3">
           <div>
-            <label className="label">Nome completo</label>
-            <input required className="input" value={name} onChange={(e) => setName(e.target.value)} />
+            <label className="field-label">Nome completo</label>
+            <input required className="input w-full" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div>
-            <label className="label">E-mail institucional ou pessoal</label>
-            <input type="email" required className="input" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <label className="field-label">E-mail institucional ou pessoal</label>
+            <input type="email" required className="input w-full" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div>
-            <label className="label">Vínculo universitário</label>
+            <label className="field-label">Vínculo universitário</label>
             <input
               required
-              className="input"
+              className="input w-full"
               placeholder="Ex.: Aluno — Engenharia (CT)"
               value={universityAffiliation}
               onChange={(e) => setUniversityAffiliation(e.target.value)}
             />
           </div>
           <div>
-            <label className="label">Senha</label>
+            <label className="field-label">Senha</label>
             <input
               type="password"
               required
               minLength={4}
-              className="input"
+              className="input w-full"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <button type="submit" disabled={pending} className="btn-primary w-full">
+          <button type="submit" disabled={pending} className="btn btn-primary w-full">
             {pending && <Spinner />} Criar minha conta
           </button>
         </form>

@@ -17,7 +17,7 @@ export default function PartnerDashboardPage() {
         title={data.partner.organizationName}
         subtitle={`Responsável: ${data.partner.responsibleName}`}
         actions={
-          <Link to="/partner/locations/new" className="btn-primary text-xs">
+          <Link to="/partner/locations/new" className="btn btn-primary text-xs">
             <Plus className="h-4 w-4" /> Criar novo ponto
           </Link>
         }
@@ -42,7 +42,7 @@ export default function PartnerDashboardPage() {
           <EmptyState title="Nenhum ponto cadastrado ainda" />
         ) : (
           data.locations.map((loc) => (
-            <div key={loc.id} className="card flex flex-wrap items-center justify-between gap-3">
+            <div key={loc.id} className="panel flex flex-wrap items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="font-bold text-slate-900">{loc.name}</h3>
@@ -52,7 +52,7 @@ export default function PartnerDashboardPage() {
                   {loc.building} • {loc.block} • {loc.availableCount} compartimentos livres
                 </p>
               </div>
-              <Link to={`/partner/locations/${loc.id}/lockers`} className="btn-secondary text-xs">
+              <Link to={`/partner/locations/${loc.id}/lockers`} className="btn text-xs">
                 <Settings className="h-4 w-4" /> Gerenciar lockers
               </Link>
             </div>

@@ -22,42 +22,30 @@ export default function PartnerLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <div className="mx-auto flex min-h-screen w-full max-w-3xl flex-col bg-slate-50 shadow-sm">
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
-          <div className="flex items-center justify-between gap-2 px-4 py-3">
-            <Link to="/partner/dashboard" className="flex items-center gap-2 font-bold text-brand-700">
-              <Lock className="h-5 w-5" /> UniLocker UFRJ
-              <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 uppercase">
-                Parceiro
-              </span>
+    <div className="min-h-screen bg-base-200">
+      <div className="mx-auto flex min-h-screen w-full max-w-3xl flex-col bg-base-200">
+        <header className="sticky top-0 z-20 border-b border-base-300 bg-base-100">
+          <div className="navbar min-h-14 gap-2 px-4">
+            <Link to="/partner/dashboard" className="flex flex-1 items-center gap-2 text-base font-semibold">
+              <Lock className="h-5 w-5 text-primary" /> UniLocker
+              <span className="badge badge-warning badge-soft badge-sm">Parceiro</span>
             </Link>
-            <div className="flex items-center gap-2">
-              <Link to="/app/explore" className="btn-secondary px-2.5 py-1 text-xs" title="Voltar ao modo Usuário">
-                <ArrowLeftRight className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Modo Usuário</span>
-              </Link>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="btn-secondary px-2.5 py-1 text-xs text-rose-700 border-rose-200 hover:bg-rose-50"
-                title="Encerrar sessão"
-              >
-                <LogOut className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Sair</span>
-              </button>
-            </div>
+            <Link to="/app/explore" className="btn btn-ghost btn-sm" title="Voltar ao modo Usuário">
+              <ArrowLeftRight className="h-4 w-4" />
+              <span className="hidden sm:inline">Modo usuário</span>
+            </Link>
+            <button type="button" onClick={handleLogout} className="btn btn-ghost btn-sm text-error" title="Encerrar sessão">
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Sair</span>
+            </button>
           </div>
-          <nav className="flex gap-1 overflow-x-auto px-2 pb-2">
+          <nav role="tablist" className="tabs tabs-border overflow-x-auto px-2">
             {navItems.map(({ to, label, icon: Icon }) => (
               <NavLink
                 key={to}
                 to={to}
-                className={({ isActive }) =>
-                  `flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium whitespace-nowrap ${
-                    isActive ? 'bg-brand-50 text-brand-700' : 'text-slate-600 hover:bg-slate-100'
-                  }`
-                }
+                role="tab"
+                className={({ isActive }) => `tab gap-1.5 whitespace-nowrap ${isActive ? 'tab-active' : ''}`}
               >
                 <Icon className="h-4 w-4" />
                 {label}

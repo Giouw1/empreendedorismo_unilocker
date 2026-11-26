@@ -12,11 +12,11 @@ const navItems = [
 /** Layout mobile-first do Usuário: container centralizado + barra inferior fixa + banner de reserva ativa. */
 export default function UserMobileLayout() {
   return (
-    <div className="min-h-screen bg-slate-100">
-      <div className="relative mx-auto flex min-h-screen w-full max-w-md flex-col bg-slate-50 shadow-sm">
-        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur">
-          <Link to="/app/explore" className="flex items-center gap-2 font-bold text-brand-700">
-            <Lock className="h-5 w-5" /> UniLocker UFRJ
+    <div className="min-h-screen bg-base-200">
+      <div className="relative mx-auto flex min-h-screen w-full max-w-md flex-col bg-base-200 shadow-sm">
+        <header className="navbar sticky top-0 z-20 min-h-14 border-b border-base-300 bg-base-100 px-4">
+          <Link to="/app/explore" className="flex items-center gap-2 text-base font-semibold">
+            <Lock className="h-5 w-5 text-primary" /> UniLocker <span className="font-normal text-base-content/60">UFRJ</span>
           </Link>
         </header>
 
@@ -26,19 +26,15 @@ export default function UserMobileLayout() {
 
         <ActiveReservationBanner />
 
-        <nav className="fixed bottom-0 left-1/2 z-20 flex w-full max-w-md -translate-x-1/2 border-t border-slate-200 bg-white shadow-lg">
+        <nav className="dock dock-sm fixed bottom-0 left-1/2 z-20 w-full max-w-md -translate-x-1/2 border-t border-base-300 bg-base-100">
           {navItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
-              className={({ isActive }) =>
-                `flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${
-                  isActive ? 'text-brand-600' : 'text-slate-500 hover:text-slate-700'
-                }`
-              }
+              className={({ isActive }) => (isActive ? 'dock-active text-primary' : 'text-base-content/60')}
             >
               <Icon className="h-5 w-5" />
-              {label}
+              <span className="dock-label">{label}</span>
             </NavLink>
           ))}
         </nav>

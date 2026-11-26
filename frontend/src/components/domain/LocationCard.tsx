@@ -16,7 +16,7 @@ export const LocationCard: React.FC<LocationCardProps> = ({ location, className 
 
   return (
     <div
-      className={`bg-white rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col group ${className}`}
+      className={`bg-white rounded-box border border-slate-200/90 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col group ${className}`}
     >
       {/* Imagem do Ponto ou Placeholder Cinza Neutro */}
       <div className="relative h-44 bg-slate-100 overflow-hidden">
@@ -38,7 +38,7 @@ export const LocationCard: React.FC<LocationCardProps> = ({ location, className 
           <AvailabilityBadge availableCount={location.availableCount} />
         </div>
 
-        <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md text-white text-[11px] font-medium px-2.5 py-1 rounded-lg flex items-center gap-1.5">
+        <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md text-white text-[11px] font-medium px-2.5 py-1 rounded-field flex items-center gap-1.5">
           <MapPin className="w-3.5 h-3.5 text-brand-400" />
           <span>{location.campus}</span>
         </div>
@@ -77,7 +77,7 @@ export const LocationCard: React.FC<LocationCardProps> = ({ location, className 
 
           <Link
             to={`/app/locations/${location.id}`}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-brand-600 text-white text-xs font-semibold hover:bg-brand-700 active:scale-95 transition-all shadow-sm"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-field bg-brand-600 text-white text-xs font-semibold hover:bg-brand-700 active:scale-95 transition-all shadow-sm"
           >
             <span>Ver lockers</span>
             <ArrowRight className="w-3.5 h-3.5" />

@@ -69,7 +69,7 @@ export default function ActiveReservationPage() {
   return (
     <div className="space-y-4">
       {/* Card Principal da Reserva */}
-      <div className="card space-y-3 border-brand-200 bg-gradient-to-br from-brand-50/70 via-white to-slate-50 shadow-sm">
+      <div className="panel space-y-3 border-brand-200 shadow-sm">
         <div className="flex items-center justify-between">
           <Badge tone={reservationTone(reservation.status)}>
             {reservationStatusLabels[reservation.status]}
@@ -114,7 +114,7 @@ export default function ActiveReservationPage() {
       <ErrorAlert message={mutateAction.error} />
 
       {/* Orientações de Acesso ao Locker Físico (Caixa Preta sob gestão do parceiro) */}
-      <div className="card space-y-2.5 bg-slate-50/80 border-slate-200">
+      <div className="panel space-y-2.5 bg-slate-50/80 border-slate-200">
         <div className="flex items-center gap-2">
           <Info className="w-4 h-4 text-brand-600 shrink-0" />
           <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wide">
@@ -125,7 +125,7 @@ export default function ActiveReservationPage() {
           O acesso ao <strong>Locker {reservation.lockerCode}</strong> e o controle de fechadura/chave são administrados diretamente pelo responsável pelo espaço ({reservation.locationName}).
         </p>
         {reservation.accessInstructions && (
-          <div className="p-2.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-700">
+          <div className="p-2.5 rounded-field bg-white border border-slate-200 text-xs text-slate-700">
             <span className="font-semibold block text-[11px] text-slate-500 mb-0.5">Orientações do espaço:</span>
             {reservation.accessInstructions}
           </div>
@@ -136,13 +136,13 @@ export default function ActiveReservationPage() {
       <div className="grid grid-cols-2 gap-2">
         <Link
           to={`/app/reservations/${reservation.id}/locate`}
-          className="btn-secondary text-xs flex items-center justify-center gap-1.5 py-2.5 font-semibold"
+          className="btn text-xs flex items-center justify-center gap-1.5 py-2.5 font-semibold"
         >
           <MapPin className="h-4 w-4 text-brand-600" /> Como chegar
         </Link>
         <Link
           to={`/app/support?reservationId=${reservation.id}`}
-          className="btn-secondary text-xs flex items-center justify-center gap-1.5 py-2.5 font-semibold"
+          className="btn text-xs flex items-center justify-center gap-1.5 py-2.5 font-semibold"
         >
           <HelpCircle className="h-4 w-4 text-slate-500" /> Suporte
         </Link>
@@ -152,7 +152,7 @@ export default function ActiveReservationPage() {
       {isActive && (
         <div className="space-y-3">
           {/* Prorrogação */}
-          <div className="card space-y-2.5">
+          <div className="panel space-y-2.5">
             <p className="flex items-center gap-1.5 text-xs font-bold tracking-wide text-slate-700 uppercase">
               <PlusCircle className="h-4 w-4 text-brand-600" /> Prorrogar aluguel
             </p>
@@ -166,7 +166,7 @@ export default function ActiveReservationPage() {
                   type="button"
                   disabled={mutateAction.pending}
                   onClick={() => void handleExtend(p)}
-                  className="btn-secondary py-2.5 text-xs font-bold hover:border-brand-500 hover:text-brand-600 transition-all"
+                  className="btn py-2.5 text-xs font-bold hover:border-brand-500 hover:text-brand-600 transition-all"
                 >
                   {periodShortLabels[p]}
                 </button>
@@ -175,7 +175,7 @@ export default function ActiveReservationPage() {
           </div>
 
           {/* Encerramento com Confirmação */}
-          <div className="card space-y-3 border-rose-100 bg-rose-50/30">
+          <div className="panel space-y-3 border-rose-100 bg-rose-50/30">
             <div className="flex items-center justify-between">
               <p className="flex items-center gap-1.5 text-xs font-bold tracking-wide text-rose-700 uppercase">
                 <Power className="h-4 w-4 text-rose-600" /> Finalizar aluguel
@@ -191,10 +191,10 @@ export default function ActiveReservationPage() {
             <p className="text-xs text-slate-600">
               Ao terminar, retire todos os seus objetos pessoais e tranque o armário.
             </p>
-            <label className="flex items-start gap-2 text-xs font-semibold text-slate-700 cursor-pointer bg-white p-2.5 rounded-xl border border-rose-200">
+            <label className="flex items-start gap-2 text-xs font-semibold text-slate-700 cursor-pointer bg-white p-2.5 rounded-field border border-rose-200">
               <input
                 type="checkbox"
-                className="mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                className="mt-0.5 checkbox checkbox-sm checkbox-primary"
                 checked={confirmedEmpty}
                 onChange={(e) => setConfirmedEmpty(e.target.checked)}
               />
@@ -204,7 +204,7 @@ export default function ActiveReservationPage() {
               type="button"
               disabled={!confirmedEmpty || mutateAction.pending}
               onClick={() => void handleComplete()}
-              className="btn-danger w-full py-2.5 text-xs font-bold"
+              className="btn btn-error w-full py-2.5 text-xs font-bold"
             >
               Encerrar e liberar compartimento
             </button>

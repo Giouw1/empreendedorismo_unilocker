@@ -41,17 +41,17 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Link to="/admin/partners" className="card hover:border-brand-500">
+        <Link to="/admin/partners" className="panel hover:border-brand-500">
           <p className="text-xs font-bold text-amber-700 uppercase">Curadoria de parceiros</p>
           <p className="mt-1 text-lg font-bold">{data.pendingPartners} solicitações pendentes</p>
           <p className="mt-1 text-xs text-slate-500">Revisar laboratórios, CAs e cantinas →</p>
         </Link>
-        <Link to="/admin/locations" className="card hover:border-brand-500">
+        <Link to="/admin/locations" className="panel hover:border-brand-500">
           <p className="text-xs font-bold text-brand-700 uppercase">Publicação de pontos</p>
           <p className="mt-1 text-lg font-bold">{data.pendingLocations} pontos aguardando aprovação</p>
           <p className="mt-1 text-xs text-slate-500">Conferir lockers e tabela de preços →</p>
         </Link>
-        <Link to="/admin/incidents" className="card hover:border-brand-500">
+        <Link to="/admin/incidents" className="panel hover:border-brand-500">
           <p className="text-xs font-bold text-red-700 uppercase">Suporte operacional</p>
           <p className="mt-1 text-lg font-bold">{data.openIncidents} ocorrências ativas</p>
           <p className="mt-1 text-xs text-slate-500">Atender chamados e liberar compartimentos →</p>

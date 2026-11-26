@@ -25,7 +25,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
-      <div className="card w-full max-w-sm space-y-4 p-6">
+      <div className="panel w-full max-w-sm space-y-4 p-6">
         <div className="text-center">
           <Link to="/" className="inline-flex items-center gap-2 font-bold text-brand-700">
             <Lock className="h-5 w-5" /> UniLocker UFRJ
@@ -37,26 +37,26 @@ export default function LoginPage() {
 
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-3">
           <div>
-            <label className="label">E-mail</label>
+            <label className="field-label">E-mail</label>
             <input
               type="email"
               required
-              className="input"
+              className="input w-full"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div>
-            <label className="label">Senha</label>
+            <label className="field-label">Senha</label>
             <input
               type="password"
               required
-              className="input"
+              className="input w-full"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <button type="submit" disabled={pending} className="btn-primary w-full">
+          <button type="submit" disabled={pending} className="btn btn-primary w-full">
             {pending && <Spinner />} Entrar
           </button>
         </form>
@@ -73,7 +73,7 @@ export default function LoginPage() {
                 type="button"
                 disabled={pending}
                 onClick={() => void handleQuickPersona(p.email)}
-                className="flex flex-col items-start p-2 rounded-xl border border-slate-200 bg-slate-50/80 hover:bg-brand-50 hover:border-brand-300 text-left transition-all active:scale-95 disabled:opacity-50"
+                className="flex flex-col items-start p-2 rounded-field border border-slate-200 bg-slate-50/80 hover:bg-brand-50 hover:border-brand-300 text-left transition-all active:scale-95 disabled:opacity-50"
               >
                 <span className="text-xs font-bold text-slate-800">{p.label}</span>
                 <span className="text-[10px] text-slate-500 line-clamp-1">{p.description}</span>

@@ -50,60 +50,60 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   const getButtonStyles = () => {
     switch (variant) {
       case 'danger':
-        return 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/30';
+        return 'btn-error';
       case 'warning':
-        return 'bg-amber-600 hover:bg-amber-700 text-white shadow-amber-600/30';
+        return 'btn-warning';
       case 'primary':
-        return 'bg-primary-600 hover:bg-primary-700 text-white shadow-primary-600/30';
+        return 'btn-primary';
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="modal modal-open">
       <div
-        className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4 animate-in zoom-in-95 duration-200"
+        className="modal-box max-w-md space-y-4"
         role="dialog"
       >
         <div className="flex items-start gap-4">
           <div
-            className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
+            className={`w-10 h-10 rounded-field flex items-center justify-center shrink-0 ${
               variant === 'danger'
-                ? 'bg-rose-100 text-rose-600'
+                ? 'bg-error/10 text-error'
                 : variant === 'warning'
-                ? 'bg-amber-100 text-amber-600'
-                : 'bg-primary-100 text-primary-600'
+                ? 'bg-warning/15 text-warning'
+                : 'bg-primary/10 text-primary'
             }`}
           >
-            <AlertTriangle className="w-6 h-6 stroke-[2]" />
+            <AlertTriangle className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-900 leading-tight">{title}</h3>
-            <p className="text-sm text-slate-500 mt-1">{description}</p>
+            <h3 className="text-lg font-semibold leading-tight">{title}</h3>
+            <p className="text-sm text-base-content/60 mt-1">{description}</p>
           </div>
         </div>
 
         {requireCheckboxLabel && (
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5">
+          <div className="bg-base-200 rounded-box p-3.5">
             <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={isChecked}
                 onChange={(e) => setIsChecked(e.target.checked)}
-                className="mt-1 w-4 h-4 text-primary-600 rounded border-slate-300 focus:ring-primary-500"
+                className="checkbox checkbox-sm checkbox-primary mt-0.5"
               />
-              <span className="text-xs font-semibold text-slate-800 leading-snug">
+              <span className="text-sm leading-snug">
                 {requireCheckboxLabel}
               </span>
             </label>
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+        <div className="modal-action mt-2">
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors"
+            className="btn btn-ghost"
           >
             {cancelLabel}
           </button>
@@ -111,7 +111,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
             type="button"
             onClick={handleConfirm}
             disabled={loading || (!!requireCheckboxLabel && !isChecked)}
-            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold shadow-md transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${getButtonStyles()}`}
+            className={`btn ${getButtonStyles()}`}
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />

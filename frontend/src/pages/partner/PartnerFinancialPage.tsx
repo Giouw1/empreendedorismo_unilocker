@@ -21,7 +21,7 @@ export default function PartnerFinancialPage() {
       />
 
       {/* Destaque do Modelo de Parceria para o Pitch */}
-      <div className="card bg-gradient-to-r from-brand-900 to-slate-900 text-white p-5 rounded-3xl shadow-xl space-y-3">
+      <div className="panel border-neutral bg-neutral text-neutral-content p-5 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Coins className="w-5 h-5 text-amber-400" />
@@ -62,7 +62,7 @@ export default function PartnerFinancialPage() {
       {/* Gráficos em Barras Comparativas */}
       <div className="grid gap-3 sm:grid-cols-2">
         {/* Por Ponto */}
-        <div className="card space-y-3">
+        <div className="panel space-y-3">
           <h2 className="text-xs font-black tracking-wide text-slate-700 uppercase flex items-center gap-1.5">
             <TrendingUp className="w-4 h-4 text-brand-600" /> Receita Líquida por Ponto
           </h2>
@@ -88,7 +88,7 @@ export default function PartnerFinancialPage() {
         </div>
 
         {/* Por Modalidade */}
-        <div className="card space-y-3">
+        <div className="panel space-y-3">
           <h2 className="text-xs font-black tracking-wide text-slate-700 uppercase flex items-center gap-1.5">
             <PieChart className="w-4 h-4 text-brand-600" /> Receita por Modalidade
           </h2>
@@ -121,7 +121,7 @@ export default function PartnerFinancialPage() {
         {!data.entries.length ? (
           <EmptyState title="Nenhuma receita registrada ainda" />
         ) : (
-          <div className="card overflow-x-auto p-0">
+          <div className="panel overflow-x-auto p-0">
             <table className="table text-xs">
               <thead>
                 <tr>
