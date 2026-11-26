@@ -1,8 +1,8 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import * as C from '../common/contracts/api.contracts';
 import { Store } from '../common/store.service';
-import { assertLockerEditable, LOCKER_HOLDING_STATUSES } from '../common/domain';
+import { assertLockerEditable, assertMinimumPrices, assertPendingConfirmation, LOCKER_HOLDING_STATUSES, NON_REVENUE_STATUSES, PERIOD_DURATION_MS } from '../common/domain';
 import { locationDetail, locationInclude, locationSummary, lockerDto, partnerDto, reservationDto, reservationInclude, revenueDto } from '../common/mappers';
 
 @Injectable()
@@ -27,10 +27,12 @@ export class PartnersService {
     return { partner: partnerDto(partner), totalLockers: lockers.length, occupiedLockers: lockers.filter(k => k.status === 'OCCUPIED').length,
       availableLockers: lockers.filter(k => k.status === 'AVAILABLE').length, maintenanceLockers: lockers.filter(k => ['MAINTENANCE', 'BLOCKED'].includes(k.status)).length,
       activeRentals: rentals.filter(r => LOCKER_HOLDING_STATUSES.includes(r.status as C.ReservationStatus)).length,
-      periodRevenueCents: rentals.filter(r => r.status !== 'Cancelled').map(revenueDto).reduce((sum, r) => sum + r.partnerNetCents, 0),
-      pendingIncidents, locations: locations.map(locationSummary) };
+      periodRevenueCents: rentals.filter(r => !NON_REVENUE_STATUSES.includes(r.status as C.ReservationStatus)).map(revenueDto).reduce((sum, r) => sum + r.partnerNetCents, 0),
+      pendingIncidents, locations: locations.map(locationSummary),
+      pendingConfirmations: rentals.filter(r => r.status === 'PendingConfirmation').sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()).map(reservationDto) };
   }
   private validatePlans(lockers: { size: string }[], plans: C.PricingPlanInput[]) {
+    assertMinimumPrices(plans);
     const keys = new Set<string>();
     for (const p of plans) {
       const key = `${p.size}:${p.period}`;
@@ -88,10 +90,37 @@ export class PartnersService {
     const p = await this.store.approvedPartner(this.store.db, user);
     return (await this.store.db.reservation.findMany({ where: { ...filters, location: { partnerId: p.id } }, include: reservationInclude, orderBy: { createdAt: 'desc' } })).map(reservationDto);
   }
+  /** Parceiro confirma no local que a pessoa chegou: a pré-reserva vira aluguel ativo e o período começa a contar agora. */
+  async activateReservation(user: C.UserDto, id: string) {
+    return this.store.db.atomic(async tx => {
+      const r = await this.ownedReservation(tx, user, id);
+      assertPendingConfirmation(r.status);
+      const startTime = this.store.clock.now();
+      const endTime = new Date(startTime.getTime() + PERIOD_DURATION_MS[r.period as C.RentalPeriod]);
+      return reservationDto(await tx.reservation.update({ where: { id }, data: { status: 'Active', startTime, endTime }, include: reservationInclude }));
+    });
+  }
+  /** Parceiro cancela a pré-reserva (ex.: a pessoa não compareceu) e libera o compartimento. */
+  async cancelPendingReservation(user: C.UserDto, id: string) {
+    return this.store.db.atomic(async tx => {
+      const r = await this.ownedReservation(tx, user, id);
+      assertPendingConfirmation(r.status);
+      const cancelled = await tx.reservation.update({ where: { id }, data: { status: 'Cancelled', endTime: this.store.clock.now() }, include: reservationInclude });
+      await tx.locker.updateMany({ where: { id: r.lockerId, status: 'OCCUPIED' }, data: { status: 'AVAILABLE' } });
+      return reservationDto(cancelled);
+    });
+  }
+  private async ownedReservation(tx: Prisma.TransactionClient, user: C.UserDto, id: string) {
+    const partner = await this.store.approvedPartner(tx, user);
+    const r = await tx.reservation.findUnique({ where: { id }, include: { location: true } });
+    if (!r) throw new NotFoundException('Reserva não encontrada.');
+    if (r.location.partnerId !== partner.id) throw new ForbiddenException('Esta reserva não pertence aos seus pontos.');
+    return r;
+  }
   async getFinancialSummary(user: C.UserDto): Promise<C.PartnerFinancialSummaryDto> {
     const partner = await this.store.approvedPartner(this.store.db, user);
     const locations = await this.store.db.location.findMany({ where: { partnerId: partner.id } });
-    const rentals = await this.store.db.reservation.findMany({ where: { location: { partnerId: partner.id }, status: { not: 'Cancelled' } }, include: reservationInclude, orderBy: { createdAt: 'desc' } });
+    const rentals = await this.store.db.reservation.findMany({ where: { location: { partnerId: partner.id }, status: { notIn: NON_REVENUE_STATUSES } }, include: reservationInclude, orderBy: { createdAt: 'desc' } });
     const entries = rentals.map(revenueDto);
     const revenueByPeriod: Record<C.RentalPeriod, number> = { DAILY: 0, WEEKLY: 0, MONTHLY: 0 };
     entries.forEach(e => revenueByPeriod[e.period] += e.partnerNetCents);

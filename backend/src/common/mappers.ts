@@ -21,7 +21,8 @@ export function lockerDto(l: Locker): C.LockerDto { return { id: l.id, locationI
 export function pricingDto(p: PricingPlan): C.PricingPlanDto { return { id: p.id, locationId: p.locationId, size: p.size as C.LockerSize, period: p.period as C.RentalPeriod, priceCents: p.priceCents }; }
 export function locationSummary(l: LocationRow): C.LocationSummaryDto {
   const prices = l.pricingPlans.filter(p => p.period === 'DAILY').map(p => p.priceCents);
-  return { id: l.id, partnerId: l.partnerId, partnerName: l.partner.organizationName, name: l.name, campus: l.campus,
+  return { id: l.id, partnerId: l.partnerId, partnerName: l.hostName || l.partner.organizationName,
+    partnerContactPhone: l.contactPhone || l.partner.contactPhone, partnerContactEmail: l.contactEmail, name: l.name, campus: l.campus,
     building: l.building, block: l.block, floor: l.floor, reference: l.reference, latitude: l.latitude, longitude: l.longitude,
     openingHours: l.openingHours, photoUrls: JSON.parse(l.photoUrlsJson) as string[], availableCount: l.lockers.filter(k => k.status === 'AVAILABLE').length,
     startingDailyPriceCents: prices.length ? Math.min(...prices) : 0, status: l.status as C.LocationStatus };

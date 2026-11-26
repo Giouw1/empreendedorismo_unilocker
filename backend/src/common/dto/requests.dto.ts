@@ -63,6 +63,9 @@ export class LocationDataBody implements C.LocationDataInput {
   @trim @IsString() @Length(1, 2000) accessInstructions!: string;
   @trim @IsString() @Length(1, 2000) usageRules!: string;
   @IsArray() @ArrayMaxSize(10) @IsString({ each: true }) @MaxLength(2000, { each: true }) photoUrls!: string[];
+  @optional() @trim @IsString() @MaxLength(160) hostName?: string;
+  @optional() @trim @IsString() @MaxLength(40) contactPhone?: string;
+  @optional() @trim @ValidateIf((_o, v) => v !== '') @IsEmail() @MaxLength(254) contactEmail?: string;
 }
 export class LockerBody implements C.LockerInput {
   @Transform(({ value }: { value: unknown }) => typeof value === 'string' ? value.trim().toUpperCase() : value)

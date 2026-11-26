@@ -1,17 +1,37 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
-import { RentalPeriod, ReservationStatus, TicketCategory, UserRole } from './contracts/api.contracts';
+import { MIN_PRICE_CENTS, RentalPeriod, ReservationStatus, TicketCategory, UserRole } from './contracts/api.contracts';
+export { MIN_PRICE_CENTS };
 
 export const PERIOD_DURATION_MS: Record<RentalPeriod, number> = {
   DAILY: 86_400_000, WEEKLY: 7 * 86_400_000, MONTHLY: 30 * 86_400_000,
 };
-export const LOCKER_HOLDING_STATUSES: ReservationStatus[] = ['Active', 'Expired', 'Incident'];
+/** Status que retêm o compartimento (inclui a pré-reserva aguardando confirmação presencial). */
+export const LOCKER_HOLDING_STATUSES: ReservationStatus[] = ['PendingConfirmation', 'Active', 'Expired', 'Incident'];
+/** Status que não geram receita: cancelados e pré-reservas ainda não confirmadas. */
+export const NON_REVENUE_STATUSES: ReservationStatus[] = ['Cancelled', 'PendingConfirmation'];
 export const ROLES: UserRole[] = ['USER', 'PARTNER', 'ADMIN'];
 export const SIZES = ['SMALL', 'MEDIUM', 'LARGE'] as const;
 export const PERIODS = ['DAILY', 'WEEKLY', 'MONTHLY'] as const;
-export const RESERVATION_STATUSES = ['Active', 'Completed', 'Cancelled', 'Expired', 'Incident'] as const;
+export const RESERVATION_STATUSES = ['PendingConfirmation', 'Active', 'Completed', 'Cancelled', 'Expired', 'Incident'] as const;
 export const LOCATION_STATUSES = ['DRAFT', 'PENDING_APPROVAL', 'ACTIVE', 'INACTIVE', 'REJECTED'] as const;
 export const TICKET_STATUSES = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'] as const;
 export const CATEGORIES = ['LOCKER_WONT_OPEN', 'LOCKER_DAMAGED', 'ITEMS_TRAPPED', 'EXPIRED_RENTAL', 'OTHER'] as const;
+/**
+ * Preço mínimo por período (centavos). Diário R$ 5, semanal R$ 25 (R$ 3,57/dia) e mensal R$ 100 (R$ 3,33/dia):
+ * quanto mais longo o aluguel, menor o custo por dia, mantendo margem para ofertador e plataforma.
+ */
+const PERIOD_LABEL: Record<RentalPeriod, string> = { DAILY: 'diário', WEEKLY: 'semanal', MONTHLY: 'mensal' };
+export function assertMinimumPrices(plans: { period: RentalPeriod; priceCents: number }[]) {
+  for (const p of plans) {
+    const min = MIN_PRICE_CENTS[p.period];
+    if (p.priceCents < min) {
+      throw new BadRequestException(`O preço ${PERIOD_LABEL[p.period]} mínimo é R$ ${(min / 100).toFixed(2).replace('.', ',')}.`);
+    }
+  }
+}
+export function assertPendingConfirmation(status: string) {
+  if (status !== 'PendingConfirmation') throw new ConflictException('Esta reserva não está aguardando confirmação presencial.');
+}
 export function splitRevenue(grossCents: number) {
   const platformFeeCents = Math.round(grossCents / 10);
   return { grossAmountCents: grossCents, platformFeeCents, partnerNetCents: grossCents - platformFeeCents };

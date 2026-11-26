@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
 import { UserDto } from '../common/contracts/api.contracts';
 import { CurrentUser, Roles } from '../common/auth/auth.guard';
 import { AddLockersBody, ApplicationBody, CreateLocationBody, LockerStatusBody, PartnerReservationQuery, UpdateLocationBody } from '../common/dto/requests.dto';
@@ -13,5 +13,7 @@ export class PartnersController {
   @Roles('PARTNER') @Post('partner/locations/:id/lockers') add(@CurrentUser() u: UserDto, @Param('id') id: string, @Body() b: AddLockersBody) { return this.partners.addLockers(u, id, b); }
   @Roles('PARTNER') @Patch('partner/lockers/:id') locker(@CurrentUser() u: UserDto, @Param('id') id: string, @Body() b: LockerStatusBody) { return this.partners.updateLockerStatus(u, id, b); }
   @Roles('PARTNER') @Get('partner/reservations') reservations(@CurrentUser() u: UserDto, @Query() q: PartnerReservationQuery) { return this.partners.listPartnerReservations(u, q); }
+  @Roles('PARTNER') @Post('partner/reservations/:id/activate') @HttpCode(200) activate(@CurrentUser() u: UserDto, @Param('id') id: string) { return this.partners.activateReservation(u, id); }
+  @Roles('PARTNER') @Post('partner/reservations/:id/cancel') @HttpCode(200) cancel(@CurrentUser() u: UserDto, @Param('id') id: string) { return this.partners.cancelPendingReservation(u, id); }
   @Roles('PARTNER') @Get('partner/financial') financial(@CurrentUser() u: UserDto) { return this.partners.getFinancialSummary(u); }
 }
