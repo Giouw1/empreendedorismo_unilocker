@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import { homePathFor, useAuth } from '../../contexts/AuthContext';
 import { useAction } from '../../hooks/useAsync';
@@ -8,6 +8,7 @@ import { ErrorAlert, Spinner } from '../../components/ui';
 export default function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const intent = (useLocation().state as { intent?: string } | null)?.intent;
   const { pending, error, run } = useAction();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -18,14 +19,15 @@ export default function RegisterPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const user = await run(() => register({ name, email, password, universityAffiliation }));
-    if (user) navigate(homePathFor(user), { replace: true });
+    // Quem escolheu "Ganhar com meu espaço" segue direto para o cadastro de parceiro.
+    if (user) navigate(intent === 'host' ? '/partner/apply' : homePathFor(user), { replace: true });
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-8">
+    <div className="flex min-h-screen items-center justify-center bg-base-200 px-4 py-8">
       <div className="panel w-full max-w-sm space-y-4 p-6">
         <div className="text-center">
-          <Link to="/" className="inline-flex items-center gap-2 font-bold text-brand-700">
+          <Link to="/" className="inline-flex items-center gap-2 font-semibold text-primary">
             <Lock className="h-5 w-5" /> UniLocker UFRJ
           </Link>
           <h1 className="mt-2 text-lg font-bold">Criar conta</h1>
@@ -57,7 +59,7 @@ export default function RegisterPage() {
             <input
               type="password"
               required
-              minLength={4}
+              minLength={6}
               className="input w-full"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -68,9 +70,9 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        <p className="text-center text-xs text-slate-500">
+        <p className="text-center text-sm text-base-content/60">
           Já possui conta?{' '}
-          <Link to="/login" className="font-semibold text-brand-600 hover:underline">
+          <Link to="/login" className="link link-primary font-medium">
             Entrar
           </Link>
         </p>

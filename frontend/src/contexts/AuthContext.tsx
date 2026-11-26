@@ -13,11 +13,10 @@ export interface DemoPersona {
   description: string;
 }
 
+/** Acessos rápidos usados só em apresentações: um aluno e um professor (parceiro). */
 export const DEMO_PERSONAS: DemoPersona[] = [
-  { email: 'cintra@poli.ufrj.br', label: 'Cintra', description: 'Aluna · aluguel semanal ativo' },
-  { email: 'joaquim@letras.ufrj.br', label: 'Joaquim', description: 'Aluno · uso pontual' },
-  { email: 'guilherme@eba.ufrj.br', label: 'Prof. Guilherme', description: 'Parceiro aprovado' },
-  { email: 'admin@unilocker.ufrj.br', label: 'Admin', description: 'Operação da plataforma' },
+  { email: 'cintra@poli.ufrj.br', label: 'Aluno', description: 'Cintra · guarda o notebook no campus' },
+  { email: 'guilherme@eba.ufrj.br', label: 'Professor', description: 'Prof. Guilherme · aluga espaços para lockers' },
 ];
 
 interface AuthContextValue {

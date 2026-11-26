@@ -1,93 +1,18 @@
-import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Lock } from 'lucide-react';
-import { DEMO_PERSONAS, homePathFor, useAuth } from '../../contexts/AuthContext';
-import { useAction } from '../../hooks/useAsync';
-import { ErrorAlert, Spinner } from '../../components/ui';
+import { LoginCard } from '../../components/auth/LoginCard';
 
 export default function LoginPage() {
-  const { login, loginAsPersona } = useAuth();
-  const navigate = useNavigate();
-  const { pending, error, run } = useAction();
-  const [email, setEmail] = useState('cintra@poli.ufrj.br');
-  const [password, setPassword] = useState('123456');
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    const user = await run(() => login({ email, password }));
-    if (user) navigate(homePathFor(user), { replace: true });
-  };
-
-  const handleQuickPersona = async (targetEmail: string) => {
-    const user = await run(() => loginAsPersona(targetEmail));
-    if (user) navigate(homePathFor(user), { replace: true });
-  };
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
-      <div className="panel w-full max-w-sm space-y-4 p-6">
-        <div className="text-center">
-          <Link to="/" className="inline-flex items-center gap-2 font-bold text-brand-700">
-            <Lock className="h-5 w-5" /> UniLocker UFRJ
-          </Link>
-          <h1 className="mt-2 text-lg font-bold">Entrar na plataforma</h1>
-        </div>
-
-        <ErrorAlert message={error} />
-
-        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-3">
-          <div>
-            <label className="field-label">E-mail</label>
-            <input
-              type="email"
-              required
-              className="input w-full"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="field-label">Senha</label>
-            <input
-              type="password"
-              required
-              className="input w-full"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          <button type="submit" disabled={pending} className="btn btn-primary w-full">
-            {pending && <Spinner />} Entrar
-          </button>
-        </form>
-
-        {/* Acesso rápido às personas de demonstração */}
-        <div className="pt-3 border-t border-slate-200/80 space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 text-center">
-            Acesso Rápido (Demonstração)
-          </p>
-          <div className="grid grid-cols-2 gap-2">
-            {DEMO_PERSONAS.map((p) => (
-              <button
-                key={p.email}
-                type="button"
-                disabled={pending}
-                onClick={() => void handleQuickPersona(p.email)}
-                className="flex flex-col items-start p-2 rounded-field border border-slate-200 bg-slate-50/80 hover:bg-brand-50 hover:border-brand-300 text-left transition-all active:scale-95 disabled:opacity-50"
-              >
-                <span className="text-xs font-bold text-slate-800">{p.label}</span>
-                <span className="text-[10px] text-slate-500 line-clamp-1">{p.description}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <p className="text-center text-xs text-slate-500">
-          Ainda não tem conta?{' '}
-          <Link to="/register" className="font-semibold text-brand-600 hover:underline">
-            Cadastre-se
-          </Link>
-        </p>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-base-200 px-4 py-10">
+      <Link to="/" className="inline-flex items-center gap-2 text-lg font-semibold">
+        <span className="inline-flex h-9 w-9 items-center justify-center rounded-field bg-primary text-primary-content">
+          <Lock className="h-5 w-5" />
+        </span>
+        UniLocker
+      </Link>
+      <div className="w-full max-w-sm">
+        <LoginCard title="Entrar na sua conta" />
       </div>
     </div>
   );
