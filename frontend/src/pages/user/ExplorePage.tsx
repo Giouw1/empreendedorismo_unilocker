@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { List, Map, Search } from 'lucide-react';
 import { locationsService } from '../../services/locations.service';
 import { useAsync } from '../../hooks/useAsync';
@@ -6,7 +6,8 @@ import { CAMPUS_OPTIONS, LOCKER_SIZES, lockerSizeLabels } from '../../utils/form
 import type { LockerSize } from '../../types/api';
 import { EmptyState, ErrorAlert, Loading, PageHeader } from '../../components/ui';
 import { LocationCard } from '../../components/domain/LocationCard';
-import { CampusVisualMap } from '../../components/domain/CampusVisualMap';
+// O mapa (Leaflet) só é baixado quando a pessoa abre a visualização em mapa.
+const CampusVisualMap = lazy(() => import('../../components/domain/CampusVisualMap').then((m) => ({ default: m.CampusVisualMap })));
 
 export default function ExplorePage() {
   const [campus, setCampus] = useState('');
@@ -96,7 +97,9 @@ export default function ExplorePage() {
 
       {!loading && viewMode === 'map' && (
         <div className="space-y-3">
-          <CampusVisualMap locations={locations || []} />
+          <Suspense fallback={<Loading label="Carregando mapa..." />}>
+            <CampusVisualMap locations={locations || []} />
+          </Suspense>
         </div>
       )}
 
