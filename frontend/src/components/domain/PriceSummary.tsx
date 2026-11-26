@@ -1,99 +1,53 @@
-import React from 'react';
-import type { RentalPeriod, LockerSize } from '../../types/api';
-import { formatCents, periodLabels, lockerSizeLabels, formatDate } from '../../utils/formatters';
-import { Calendar, Tag } from 'lucide-react';
+import type { LockerSize, RentalPeriod } from '../../types/api';
+import { formatCents, lockerSizeLabels, periodLabels } from '../../utils/formatters';
+import { Tag } from 'lucide-react';
 
 interface PriceSummaryProps {
   period: RentalPeriod;
   size: LockerSize;
   amountCents: number;
-  startDate?: string | Date;
-  endDate?: string | Date;
   locationName?: string;
   lockerCode?: string;
   className?: string;
 }
 
-export const PriceSummary: React.FC<PriceSummaryProps> = ({
-  period,
-  size,
-  amountCents,
-  startDate,
-  endDate,
-  locationName,
-  lockerCode,
-  className = '',
-}) => {
-  const getDurationLabel = (p: RentalPeriod) => {
-    switch (p) {
-      case 'DAILY':
-        return '24 horas de acesso irrestrito';
-      case 'WEEKLY':
-        return '7 dias corridos de acesso';
-      case 'MONTHLY':
-        return '30 dias corridos de acesso';
-    }
-  };
+const durationLabels: Record<RentalPeriod, string> = {
+  DAILY: '24 horas após a confirmação',
+  WEEKLY: '7 dias após a confirmação',
+  MONTHLY: '30 dias após a confirmação',
+};
 
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className={`bg-slate-50 border border-slate-200 rounded-box p-5 space-y-4 ${className}`}>
-      <div className="flex items-center justify-between pb-3 border-b border-slate-200">
-        <h4 className="font-semibold text-slate-800 text-sm flex items-center gap-2">
-          <Tag className="w-4 h-4 text-brand-600" /> Resumo da Contratação
-        </h4>
-      </div>
-
-      <div className="space-y-2 text-sm">
-        {locationName && (
-          <div className="flex justify-between text-slate-600">
-            <span>Ponto:</span>
-            <span className="font-medium text-slate-800 text-right">{locationName}</span>
-          </div>
-        )}
-        {lockerCode && (
-          <div className="flex justify-between text-slate-600">
-            <span>Compartimento:</span>
-            <span className="font-bold text-slate-900 bg-slate-200/80 px-2 py-0.5 rounded text-xs">
-              {lockerCode}
-            </span>
-          </div>
-        )}
-        <div className="flex justify-between text-slate-600">
-          <span>Tamanho:</span>
-          <span className="font-medium text-slate-800">{lockerSizeLabels[size]}</span>
-        </div>
-        <div className="flex justify-between text-slate-600">
-          <span>Período:</span>
-          <span className="font-medium text-slate-800">{periodLabels[period]}</span>
-        </div>
-        <div className="flex justify-between text-slate-500 text-xs">
-          <span>Validade:</span>
-          <span>{getDurationLabel(period)}</span>
-        </div>
-        {startDate && endDate && (
-          <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
-            <span className="flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5" /> Vigência:
-            </span>
-            <span>
-              {formatDate(typeof startDate === 'string' ? startDate : startDate.toISOString())} até{' '}
-              {formatDate(typeof endDate === 'string' ? endDate : endDate.toISOString())}
-            </span>
-          </div>
-        )}
-      </div>
-
-      <div className="pt-3 border-t border-slate-200 flex items-baseline justify-between">
-        <div>
-          <span className="text-xs text-slate-500 block">Total da contratação</span>
-          <span className="text-2xl font-extrabold text-slate-900">
-            {formatCents(amountCents)}
-          </span>
-        </div>
-        <span className="text-xs text-slate-500 font-medium">
-          Acerto direto no espaço
-        </span>
-      </div>
+    <div className="flex items-start justify-between gap-3">
+      <span className="shrink-0 text-base-content/60">{label}</span>
+      <span className="min-w-0 text-right font-medium">{children}</span>
     </div>
   );
-};
+}
+
+export function PriceSummary({ period, size, amountCents, locationName, lockerCode, className = '' }: PriceSummaryProps) {
+  return (
+    <section className={`panel space-y-3 ${className}`}>
+      <h2 className="section-title border-b border-base-300 pb-3">
+        <Tag className="h-4 w-4 text-primary" /> Resumo
+      </h2>
+      <div className="space-y-2 text-sm">
+        {locationName && <Row label="Ponto">{locationName}</Row>}
+        <Row label="Compartimento">{lockerCode ? <span className="badge badge-neutral badge-sm">{lockerCode}</span> : 'Escolhido automaticamente'}</Row>
+        <Row label="Tamanho">{lockerSizeLabels[size]}</Row>
+        <Row label="Período">{periodLabels[period]}</Row>
+        <Row label="Validade">
+          <span className="text-xs font-normal text-base-content/60">{durationLabels[period]}</span>
+        </Row>
+      </div>
+      <div className="flex items-end justify-between gap-3 border-t border-base-300 pt-3">
+        <div>
+          <span className="block text-xs text-base-content/60">Total</span>
+          <span className="text-2xl font-bold tabular-nums">{formatCents(amountCents)}</span>
+        </div>
+        <span className="text-right text-xs text-base-content/60">Pago no local</span>
+      </div>
+    </section>
+  );
+}

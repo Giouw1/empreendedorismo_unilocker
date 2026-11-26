@@ -52,17 +52,17 @@ export default function ExplorePage() {
       />
 
       {/* Barra de Filtros */}
-      <div className="panel space-y-2.5">
+      <div className="panel grid gap-2.5 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_auto] md:items-center">
         <label className="input w-full">
-          <Search className="h-4 w-4 opacity-50" />
+          <Search className="h-4 w-4 shrink-0 opacity-50" />
           <input
-            className="grow"
+            className="min-w-0 grow"
             placeholder="Buscar prédio, bloco ou laboratório..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </label>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 md:contents">
           <select className="select w-full" value={campus} onChange={(e) => setCampus(e.target.value)}>
             <option value="">Todos os campi</option>
             {CAMPUS_OPTIONS.map((c) => (
@@ -80,14 +80,14 @@ export default function ExplorePage() {
             ))}
           </select>
         </div>
-        <label className="inline-flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer">
+        <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-medium text-base-content/70 md:text-sm">
           <input
             type="checkbox"
             checked={onlyAvailable}
             onChange={(e) => setOnlyAvailable(e.target.checked)}
             className="checkbox checkbox-sm checkbox-primary"
           />
-          Mostrar apenas pontos com vagas disponíveis
+          Só com vagas
         </label>
       </div>
 
@@ -101,12 +101,11 @@ export default function ExplorePage() {
       )}
 
       {!loading && viewMode === 'list' && (
-        <div className="space-y-3">
+        <div className="grid gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
           {!locations?.length ? (
-            <EmptyState
-              title="Nenhum ponto encontrado"
-              description="Tente ajustar os filtros de busca ou escolher outro campus."
-            />
+            <div className="md:col-span-2 xl:col-span-3">
+              <EmptyState title="Nenhum ponto encontrado" description="Tente ajustar os filtros de busca ou escolher outro campus." />
+            </div>
           ) : (
             locations.map((loc) => <LocationCard key={loc.id} location={loc} />)
           )}
