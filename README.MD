@@ -59,6 +59,7 @@ npm run setup      # cria o .env, o banco SQLite e os dados de demonstração
 npm run start:dev
 ```
 O `npm run setup` pode ser rodado de novo a qualquer momento (por exemplo, depois de um `git pull` que traga migrações novas). Pare o backend antes, porque o banco fica travado enquanto ele roda.
+Também troque os .env.example para ter como nome .env
 
 ### 2. Frontend (`http://localhost:5173`)
 Em outro terminal:
@@ -67,6 +68,7 @@ cd frontend
 npm install
 npm run dev
 ```
+
 
 ### Problemas comuns
 - **Backend fecha com "Configure JWT_SECRET"**: falta o `backend/.env`. Rode `npm run setup`.
