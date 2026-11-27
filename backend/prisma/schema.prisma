@@ -54,6 +54,9 @@ model Location {
   accessInstructions String
   usageRules         String
   photoUrlsJson      String        @default("[]")
+  hostName           String        @default("") // Nome público do parceiro responsável por este ponto
+  contactPhone       String        @default("")
+  contactEmail       String        @default("")
   status             String        @default("PENDING_APPROVAL") // DRAFT | PENDING_APPROVAL | ACTIVE | INACTIVE | REJECTED
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
@@ -101,7 +104,7 @@ model Reservation {
   period          String
   startTime       DateTime
   endTime         DateTime
-  status          String          @default("Active") // Active | Completed | Cancelled | Expired | Incident
+  status          String          @default("Active") // PendingConfirmation | Active | Completed | Cancelled | Expired | Incident
   totalPriceCents Int
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt

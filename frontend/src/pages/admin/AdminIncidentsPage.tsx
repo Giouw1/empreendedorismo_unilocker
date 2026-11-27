@@ -41,7 +41,7 @@ export default function AdminIncidentsPage() {
         subtitle="Atendimento a usuários e liberação controlada de compartimentos retidos"
         actions={
           <select
-            className="input w-48"
+            className="select w-48"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value as TicketStatus | '')}
           >
@@ -61,7 +61,7 @@ export default function AdminIncidentsPage() {
 
       <div className="space-y-3">
         {incidents?.map((tk) => (
-          <div key={tk.id} className="card space-y-3">
+          <div key={tk.id} className="panel space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <Badge tone={tk.priority === 'HIGH' ? 'red' : 'yellow'}>
@@ -80,7 +80,7 @@ export default function AdminIncidentsPage() {
 
             <div className="grid gap-2 border-t border-slate-100 pt-3 sm:grid-cols-2">
               <input
-                className="input"
+                className="input w-full"
                 placeholder="Resposta / anotação administrativa..."
                 value={notesByTicket[tk.id] ?? tk.adminNotes ?? ''}
                 onChange={(e) =>
@@ -92,6 +92,7 @@ export default function AdminIncidentsPage() {
                   <label className="inline-flex items-center gap-1.5 text-xs text-slate-600">
                     <input
                       type="checkbox"
+                      className="checkbox checkbox-sm checkbox-primary"
                       checked={!!releaseByTicket[tk.id]}
                       onChange={(e) =>
                         setReleaseByTicket((prev) => ({ ...prev, [tk.id]: e.target.checked }))
@@ -104,7 +105,7 @@ export default function AdminIncidentsPage() {
                   type="button"
                   disabled={action.pending}
                   onClick={() => void handleResolve(tk.id, 'IN_PROGRESS')}
-                  className="btn-secondary px-2.5 py-1.5 text-xs"
+                  className="btn px-2.5 py-1.5 text-xs"
                 >
                   Em atendimento
                 </button>
@@ -112,7 +113,7 @@ export default function AdminIncidentsPage() {
                   type="button"
                   disabled={action.pending}
                   onClick={() => void handleResolve(tk.id, 'RESOLVED')}
-                  className="btn-success px-2.5 py-1.5 text-xs"
+                  className="btn btn-success px-2.5 py-1.5 text-xs"
                 >
                   {action.pending && <Spinner />} Marcar resolvido
                 </button>

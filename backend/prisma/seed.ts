@@ -16,6 +16,7 @@ export async function seedDatabase(db: PrismaClient) {
       await tx.location.upsert({
         where: { id: l.id },
         update: {
+          partnerId: l.partnerId,
           name: l.name,
           campus: l.campus,
           building: l.building,
@@ -29,13 +30,17 @@ export async function seedDatabase(db: PrismaClient) {
           accessInstructions: l.accessInstructions,
           usageRules: l.usageRules,
           photoUrlsJson: JSON.stringify(photoUrls),
+          hostName: l.hostName,
+          contactPhone: l.contactPhone,
+          contactEmail: l.contactEmail,
           status: l.status,
         },
         create: { ...l, photoUrlsJson: JSON.stringify(photoUrls) },
       });
     }
     for (const k of fixtures.lockers) await tx.locker.upsert({ where: { id: k.id }, update: {}, create: k });
-    for (const p of fixtures.pricingPlans) await tx.pricingPlan.upsert({ where: { id: p.id }, update: {}, create: p });
+    // Preços de demonstração acompanham as fixtures (respeitando os mínimos atuais).
+    for (const p of fixtures.pricingPlans) await tx.pricingPlan.upsert({ where: { id: p.id }, update: { priceCents: p.priceCents }, create: p });
     for (const r of fixtures.reservations) await tx.reservation.upsert({ where: { id: r.id }, update: {}, create: r });
     for (const e of fixtures.accessEvents) await tx.accessEvent.upsert({ where: { id: e.id }, update: {}, create: e });
     for (const t of fixtures.supportTickets) await tx.supportTicket.upsert({ where: { id: t.id }, update: {}, create: t });

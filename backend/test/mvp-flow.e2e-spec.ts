@@ -16,7 +16,7 @@ describe('Contrato MVP — HTTP + SQLite real', { concurrency: false }, () => {
   let base: string;
   let tokens: Record<string, string>;
   const covered = new Set<string>();
-  const emails: Record<string, string> = { cintra: 'cintra@poli.ufrj.br', joaquim: 'joaquim@letras.ufrj.br', guilherme: 'guilherme@eba.ufrj.br', admin: 'admin@unilocker.ufrj.br', cantina: 'cantina@ccmn.ufrj.br' };
+  const emails: Record<string, string> = { cintra: 'cintra@poli.ufrj.br', joaquim: 'joaquim@letras.ufrj.br', guilherme: 'guilherme@eba.ufrj.br', admin: 'admin@unilocker.ufrj.br', cantina: 'cantina@ccmn.ufrj.br', caeng: 'caeng@poli.ufrj.br' };
   const route = (path: string) => path.split('?')[0].replace(/\/(loc-[\w-]+|lk-[\w-]+|res-[\w-]+|p-[\w-]+|tk-[\w-]+|expired-[\w-]+|[0-9a-f]{8}-[0-9a-f-]{27,})/g, '/:id');
   async function api(path: string, method = 'GET', body?: object, persona?: string) {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -30,8 +30,16 @@ describe('Contrato MVP — HTTP + SQLite real', { concurrency: false }, () => {
     assert.equal(result.status, 200, JSON.stringify(result.body));
     return result.body.accessToken as string;
   }
-  async function reserve(lockerId?: string, size = 'SMALL') {
+  /** Cria a pré-reserva online (aguardando confirmação presencial). */
+  async function preReserve(lockerId?: string, size = 'SMALL') {
     return api('/reservations', 'POST', { locationId: 'loc-eba', size, period: 'DAILY', ...(lockerId ? { lockerId } : {}) }, 'joaquim');
+  }
+  /** Pré-reserva + ativação pelo parceiro dono do ponto (Prof. Guilherme), como acontece no local. */
+  async function reserve(lockerId?: string, size = 'SMALL') {
+    const created = await preReserve(lockerId, size);
+    if (created.status !== 201) return created;
+    const activated = await api(`/partner/reservations/${created.body.id}/activate`, 'POST', undefined, 'guilherme');
+    return { status: activated.status === 200 ? 201 : activated.status, body: activated.body };
   }
   before(async () => {
     mkdirSync(resolve('test-results'), { recursive: true });
@@ -80,7 +88,7 @@ describe('Contrato MVP — HTTP + SQLite real', { concurrency: false }, () => {
 
   test('catálogo, filtros combinados, boolean false, detalhe e disponibilidade', async () => {
     const list = await api('/locations?onlyAvailable=false');
-    assert.equal(list.body.length, 3);
+    assert.equal(list.body.length, 5);
     assert.ok(list.body.every((l: any) => l.status === 'ACTIVE' && Number.isInteger(l.startingDailyPriceCents)));
     assert.equal((await api('/locations?size=SMALL&period=DAILY&maxPriceCents=500&onlyAvailable=true')).body.length, 1);
     assert.equal((await api('/locations?size=LARGE&period=DAILY&maxPriceCents=500&onlyAvailable=true')).body.length, 0);
@@ -88,6 +96,8 @@ describe('Contrato MVP — HTTP + SQLite real', { concurrency: false }, () => {
     assert.equal((await api('/locations?search=ARTES')).body[0].id, 'loc-eba');
     const detail = await api('/locations/loc-eba');
     assert.equal(detail.body.pricingPlans.length, 9);
+    assert.equal(detail.body.partnerName, 'Laboratório de Artes Modernas — Escola de Belas Artes (EBA/UFRJ)');
+    assert.ok(detail.body.partnerContactPhone && detail.body.partnerContactEmail);
     assert.equal(detail.body.availableBySize.SMALL, 1);
     assert.equal((await api('/locations/loc-eba/lockers')).body.length, 6);
     assert.deepEqual((await api('/lockers/lk-eba-a-02/availability?period=WEEKLY')).body, { available: true, priceCents: 2500 });
@@ -118,12 +128,44 @@ describe('Contrato MVP — HTTP + SQLite real', { concurrency: false }, () => {
     assert.ok((await api('/reservations/me', 'GET', undefined, 'joaquim')).body.history.some((v: any) => v.id === r.id));
   });
 
+  test('pré-reserva retém o locker, não gera receita e só o parceiro dono ativa ou cancela', async () => {
+    const before = (await api('/partner/financial', 'GET', undefined, 'guilherme')).body;
+    const pending = (await preReserve('lk-eba-a-02')).body;
+    assert.equal(pending.status, 'PendingConfirmation');
+    assert.equal((await db.locker.findUniqueOrThrow({ where: { id: 'lk-eba-a-02' } })).status, 'OCCUPIED');
+    assert.equal((await preReserve('lk-eba-a-02')).status, 409);
+    assert.ok((await api('/reservations/me', 'GET', undefined, 'joaquim')).body.active.some((r: any) => r.id === pending.id));
+    assert.equal((await api(`/reservations/${pending.id}/extend`, 'POST', { additionalPeriod: 'DAILY' }, 'joaquim')).status, 409);
+    assert.equal((await api('/partner/financial', 'GET', undefined, 'guilherme')).body.grossTotalCents, before.grossTotalCents);
+    const dashboard = (await api('/partner/dashboard', 'GET', undefined, 'guilherme')).body;
+    assert.ok(dashboard.pendingConfirmations.some((r: any) => r.id === pending.id));
+    assert.equal((await api(`/partner/reservations/${pending.id}/activate`, 'POST', undefined, 'caeng')).status, 403);
+    assert.equal((await api(`/partner/reservations/${pending.id}/activate`, 'POST', undefined, 'joaquim')).status, 403);
+    const activated = await api(`/partner/reservations/${pending.id}/activate`, 'POST', undefined, 'guilherme');
+    assert.equal(activated.status, 200, JSON.stringify(activated.body));
+    assert.equal(activated.body.status, 'Active');
+    assert.ok(new Date(activated.body.startTime).getTime() >= new Date(pending.startTime).getTime());
+    assert.equal(new Date(activated.body.endTime).getTime() - new Date(activated.body.startTime).getTime(), 86400000);
+    assert.equal((await api(`/partner/reservations/${pending.id}/activate`, 'POST', undefined, 'guilherme')).status, 409);
+    assert.equal((await api(`/partner/reservations/${pending.id}/cancel`, 'POST', undefined, 'guilherme')).status, 409);
+    assert.equal((await api('/partner/financial', 'GET', undefined, 'guilherme')).body.grossTotalCents - before.grossTotalCents, 500);
+
+    const noShow = (await preReserve(undefined, 'MEDIUM')).body;
+    const cancelled = await api(`/partner/reservations/${noShow.id}/cancel`, 'POST', undefined, 'guilherme');
+    assert.equal(cancelled.body.status, 'Cancelled');
+    assert.equal((await db.locker.findUniqueOrThrow({ where: { id: noShow.lockerId } })).status, 'AVAILABLE');
+
+    const userCancel = (await preReserve(undefined, 'LARGE')).body;
+    assert.equal((await api(`/reservations/${userCancel.id}/cancel`, 'POST', undefined, 'joaquim')).body.status, 'Cancelled');
+    assert.equal((await db.locker.findUniqueOrThrow({ where: { id: userCancel.lockerId } })).status, 'AVAILABLE');
+  });
+
   test('concorrência no mesmo locker e alocação automática em lockers diferentes', async () => {
-    const results = await Promise.all(Array.from({ length: 8 }, () => reserve('lk-eba-a-02')));
+    const results = await Promise.all(Array.from({ length: 8 }, () => preReserve('lk-eba-a-02')));
     assert.equal(results.filter(r => r.status === 201).length, 1, JSON.stringify(results));
     assert.equal(results.filter(r => r.status === 409).length, 7);
-    assert.equal(await db.reservation.count({ where: { lockerId: 'lk-eba-a-02', status: 'Active' } }), 1);
-    const automatic = await Promise.all([reserve(undefined, 'MEDIUM'), reserve(undefined, 'MEDIUM')]);
+    assert.equal(await db.reservation.count({ where: { lockerId: 'lk-eba-a-02', status: 'PendingConfirmation' } }), 1);
+    const automatic = await Promise.all([preReserve(undefined, 'MEDIUM'), preReserve(undefined, 'MEDIUM')]);
     assert.ok(automatic.every(r => r.status === 201), JSON.stringify(automatic));
     assert.notEqual(automatic[0].body.lockerId, automatic[1].body.lockerId);
   });
@@ -148,7 +190,7 @@ describe('Contrato MVP — HTTP + SQLite real', { concurrency: false }, () => {
   test('Expired não libera; admin resolve ocorrência e libera sem afetar nova ocupação', async () => {
     await db.reservation.update({ where: { id: 'res-cintra-active' }, data: { endTime: new Date(Date.now() - 1000) } });
     const mine = await api('/reservations/me', 'GET', undefined, 'cintra');
-    assert.equal(mine.body.active[0].status, 'Expired');
+    assert.equal(mine.body.active.find((r: any) => r.id === 'res-cintra-active').status, 'Expired');
     assert.equal((await db.locker.findUniqueOrThrow({ where: { id: 'lk-ct-b-05' } })).status, 'OCCUPIED');
     assert.equal((await api('/reservations/res-cintra-active/extend', 'POST', { additionalPeriod: 'DAILY' }, 'cintra')).status, 409);
     assert.equal((await api('/reservations/res-cintra-active/complete', 'POST', { confirmedEmptyAndClosed: true }, 'cintra')).status, 409);
@@ -195,7 +237,14 @@ describe('Contrato MVP — HTTP + SQLite real', { concurrency: false }, () => {
 
   test('parceiro cria/edita ponto, adiciona lockers e admin publica após validar preços', async () => {
     const body = { locationData: { name: 'Novo laboratório', campus: 'Fundão', building: 'EBA', block: 'A', floor: 'Térreo', roomOrCorridor: 'Entrada', reference: 'Portaria', latitude: -22.86, longitude: -43.22, openingHours: '24 horas', accessInstructions: 'Na entrada principal', usageRules: 'Retire seus objetos', photoUrls: [] },
-      lockersData: [{ code: 'N-01', size: 'SMALL' }], pricingPlans: ['DAILY', 'WEEKLY', 'MONTHLY'].map(period => ({ size: 'SMALL', period, priceCents: 501 })) };
+      lockersData: [{ code: 'N-01', size: 'SMALL' }], pricingPlans: [['DAILY', 500], ['WEEKLY', 2500], ['MONTHLY', 10000]].map(([period, priceCents]) => ({ size: 'SMALL', period, priceCents })) };
+    for (const [period, priceCents] of [['DAILY', 100], ['WEEKLY', 2499], ['MONTHLY', 9999]] as const) {
+      const cheap = { ...body, pricingPlans: body.pricingPlans.map(p => p.period === period ? { ...p, priceCents } : p) };
+      const refused = await api('/partner/locations', 'POST', cheap, 'guilherme');
+      assert.equal(refused.status, 400, `${period}: ${JSON.stringify(refused.body)}`);
+      assert.match(String(refused.body.message), /mínimo/);
+    }
+    assert.equal((await api('/partner/locations/loc-eba', 'PATCH', { pricingPlans: [{ size: 'SMALL', period: 'DAILY', priceCents: 100 }] }, 'guilherme')).status, 400);
     const created = await api('/partner/locations', 'POST', body, 'guilherme');
     assert.equal(created.status, 201, JSON.stringify(created.body));
     const id = created.body.id;
@@ -264,12 +313,12 @@ describe('Contrato MVP — HTTP + SQLite real', { concurrency: false }, () => {
     assert.equal((await api('/users/me', 'GET', undefined, 'cintra')).body.id, 'u-cintra');
   });
 
-  test('os 33 endpoints oficiais foram exercitados com sucesso', () => {
+  test('os 35 endpoints oficiais foram exercitados com sucesso', () => {
     const expected = [
       'POST /auth/register','POST /auth/login','GET /users/me','PATCH /users/me','GET /locations','GET /locations/:id','GET /locations/:id/lockers','GET /lockers/:id/availability',
       'POST /reservations','GET /reservations/me','GET /reservations/:id','POST /reservations/:id/extend','POST /reservations/:id/complete','POST /reservations/:id/cancel',
       'POST /partners/applications','GET /partner/dashboard','POST /partner/locations','PATCH /partner/locations/:id',
-      'POST /partner/locations/:id/lockers','PATCH /partner/lockers/:id','GET /partner/reservations','GET /partner/financial','POST /support/tickets','GET /support/tickets/me',
+      'POST /partner/locations/:id/lockers','PATCH /partner/lockers/:id','GET /partner/reservations','POST /partner/reservations/:id/activate','POST /partner/reservations/:id/cancel','GET /partner/financial','POST /support/tickets','GET /support/tickets/me',
       'GET /admin/dashboard','GET /admin/users','GET /admin/partners/pending','POST /admin/partners/:id/approve','GET /admin/locations','POST /admin/locations/:id/approve','GET /admin/reservations','GET /admin/incidents','PATCH /admin/incidents/:id',
     ];
     assert.deepEqual(expected.filter(endpoint => !covered.has(endpoint)), []);

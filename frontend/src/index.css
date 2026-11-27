@@ -1,11 +1,32 @@
 @import 'tailwindcss';
+@plugin 'daisyui' {
+  themes: corporate --default;
+}
 
-@theme {
-  --color-brand-50: #eef6ff;
-  --color-brand-100: #d9eaff;
-  --color-brand-500: #2563eb;
-  --color-brand-600: #1d4ed8;
-  --color-brand-700: #1e40af;
+/* Ajustes finos sobre o tema corporate: fundo mais claro e cantos levemente maiores. */
+@plugin 'daisyui/theme' {
+  name: 'corporate';
+  default: true;
+  --color-base-200: oklch(97.5% 0.004 247);
+  --color-base-300: oklch(92% 0.008 247);
+  --radius-box: 0.5rem;
+  --radius-field: 0.375rem;
+}
+
+/*
+ * Tons "brand-*" legados passam a derivar da cor primária do tema daisyUI,
+ * para que todo o app siga a paleta do tema corporate.
+ */
+@theme inline {
+  --color-brand-50: color-mix(in oklab, var(--color-primary) 6%, white);
+  --color-brand-100: color-mix(in oklab, var(--color-primary) 12%, white);
+  --color-brand-200: color-mix(in oklab, var(--color-primary) 25%, white);
+  --color-brand-300: color-mix(in oklab, var(--color-primary) 40%, white);
+  --color-brand-400: color-mix(in oklab, var(--color-primary) 65%, white);
+  --color-brand-500: color-mix(in oklab, var(--color-primary) 85%, white);
+  --color-brand-600: var(--color-primary);
+  --color-brand-700: color-mix(in oklab, var(--color-primary) 85%, black);
+  --color-brand-900: color-mix(in oklab, var(--color-primary) 45%, black);
 }
 
 html,
@@ -15,6 +36,7 @@ body,
 }
 
 body {
+  overflow-wrap: break-word;
   font-family:
     'Inter',
     system-ui,
@@ -22,42 +44,106 @@ body {
     'Segoe UI',
     Roboto,
     sans-serif;
-  color: #0f172a;
+  background-color: var(--color-base-200);
+  color: var(--color-base-content);
 }
 
-/* TODO [PLANO-FRONTEND]: extrair estes utilitários para uma biblioteca de componentes (Button, Card, Input, Badge). */
+/*
+ * Itens de grid podem encolher abaixo do tamanho do conteúdo: sem isso, um texto longo
+ * (nome de ponto, e-mail, ID) empurra o card para fora da tela em vez de quebrar ou truncar.
+ * Em flex, o encolhimento é decidido caso a caso com `min-w-0`.
+ * Fica em `@layer base` para que utilitários como `min-w-[140px]` continuem valendo.
+ */
+@layer base {
+  :where(.grid) > * {
+    min-width: 0;
+  }
+}
+
+/* Modo celular (iframe): sem barras de rolagem visíveis, toque sem destaque azul. */
+html.embedded {
+  -webkit-tap-highlight-color: transparent;
+}
+html.embedded,
+html.embedded * {
+  scrollbar-width: none;
+}
+html.embedded::-webkit-scrollbar,
+html.embedded *::-webkit-scrollbar {
+  display: none;
+}
+
 @layer components {
-  .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50;
+  /* Superfície padrão (equivalente a um card simples do daisyUI, com padding embutido). */
+  .panel {
+    @apply rounded-box border border-base-300 bg-base-100 p-4 shadow-xs;
   }
-  .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50;
-  }
-  .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50;
-  }
-  .btn-success {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50;
-  }
-  .card {
-    @apply rounded-2xl border border-slate-200 bg-white p-4 shadow-sm;
-  }
-  .input {
-    @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100;
-  }
-  .label {
-    @apply mb-1 block text-xs font-semibold tracking-wide text-slate-600 uppercase;
+  .field-label {
+    @apply mb-1.5 block text-sm font-medium text-base-content/80;
   }
   .page-title {
-    @apply text-xl font-bold text-slate-900;
+    @apply text-xl font-semibold text-base-content break-words;
   }
-  .table {
-    @apply w-full text-left text-sm;
+  /* Título de seção dentro de cards. */
+  .section-title {
+    @apply flex items-center gap-2 text-sm font-semibold text-base-content;
   }
-  .table th {
-    @apply border-b border-slate-200 px-3 py-2 text-xs font-semibold text-slate-500 uppercase;
+  /* Ícone em "pastilha" com tamanho fixo, para alinhar listas e cards. */
+  .icon-chip {
+    @apply inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-field bg-primary/10 text-primary;
   }
-  .table td {
-    @apply border-b border-slate-100 px-3 py-2 align-top;
-  }
+}
+
+/* Marcadores do mapa de pontos: pílula com o preço, apontando para a coordenada. */
+.ul-pin {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, calc(-100% - 6px));
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font: 600 12px/1.2 'Inter', system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  background: var(--color-base-100);
+  color: var(--color-base-content);
+  border: 1.5px solid var(--color-base-300);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.18);
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+.ul-pin::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 10px;
+  height: 10px;
+  background: inherit;
+  border-right: inherit;
+  border-bottom: inherit;
+  transform: translateX(-50%) rotate(45deg);
+  border-bottom-right-radius: 2px;
+}
+.ul-pin--on {
+  border-color: var(--color-primary);
+}
+.ul-pin--off {
+  color: color-mix(in oklab, var(--color-base-content) 50%, transparent);
+}
+.ul-pin--selected {
+  background: var(--color-primary);
+  color: var(--color-primary-content);
+  border-color: var(--color-primary);
+  transform: translate(-50%, calc(-100% - 6px)) scale(1.1);
+}
+.leaflet-container {
+  font-family: inherit;
+  background: var(--color-base-200);
+}
+/* Mapa-base mais discreto para os marcadores se destacarem. */
+.leaflet-tile-pane {
+  filter: grayscale(0.4) saturate(0.85) brightness(1.04);
 }

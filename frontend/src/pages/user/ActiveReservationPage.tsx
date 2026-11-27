@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Clock, HelpCircle, MapPin, PlusCircle, Power, Info } from 'lucide-react';
+import { ArrowLeft, Clock, HelpCircle, Hourglass, Info, MapPin, PlusCircle, Power } from 'lucide-react';
 import { reservationsService } from '../../services/reservations.service';
 import { useAction, useAsync } from '../../hooks/useAsync';
 import { useCountdown } from '../../hooks/useCountdown';
@@ -15,46 +15,43 @@ import {
   reservationTone,
 } from '../../utils/formatters';
 import type { RentalPeriod } from '../../types/api';
-import { Badge, ErrorAlert, Loading, SuccessAlert } from '../../components/ui';
+import { Badge, CopyId, ErrorAlert, Loading, SuccessAlert } from '../../components/ui';
 import { ConfirmationDialog } from '../../components/domain/ConfirmationDialog';
 
 export default function ActiveReservationPage() {
   const { id = '' } = useParams();
-  const { data: reservation, loading, error, reload, setData } = useAsync(
-    () => reservationsService.getById(id),
-    [id],
-  );
+  const { data: reservation, loading, error, reload, setData } = useAsync(() => reservationsService.getById(id), [id]);
 
   const mutateAction = useAction();
   const [confirmedEmpty, setConfirmedEmpty] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  const countdown = useCountdown(reservation?.endTime);
+  const countdown = useCountdown(reservation?.status === 'Active' ? reservation.endTime : null);
 
   if (loading) return <Loading />;
   if (error || !reservation) return <ErrorAlert message={error ?? 'Reserva não encontrada'} onRetry={() => void reload()} />;
 
   const isActive = reservation.status === 'Active';
+  const isPending = reservation.status === 'PendingConfirmation';
+
+  const flash = (message: string) => {
+    setSuccessMessage(message);
+    window.setTimeout(() => setSuccessMessage(null), 4000);
+  };
 
   const handleExtend = async (additionalPeriod: RentalPeriod) => {
-    const updated = await mutateAction.run(() =>
-      reservationsService.extend(reservation.id, { additionalPeriod }),
-    );
+    const updated = await mutateAction.run(() => reservationsService.extend(reservation.id, { additionalPeriod }));
     if (updated) {
       setData(updated);
-      setSuccessMessage(`Aluguel prorrogado com sucesso por ${periodShortLabels[additionalPeriod]}!`);
-      setTimeout(() => setSuccessMessage(null), 4000);
+      flash(`Aluguel prorrogado por ${periodShortLabels[additionalPeriod].replace('+', '')}.`);
     }
   };
 
   const handleComplete = async () => {
-    const updated = await mutateAction.run(() =>
-      reservationsService.complete(reservation.id, { confirmedEmptyAndClosed: true }),
-    );
+    const updated = await mutateAction.run(() => reservationsService.complete(reservation.id, { confirmedEmptyAndClosed: true }));
     if (updated) {
       setData(updated);
-      setSuccessMessage('Aluguel finalizado com sucesso! Compartimento liberado.');
+      flash('Aluguel finalizado. Compartimento liberado.');
     }
   };
 
@@ -62,164 +59,151 @@ export default function ActiveReservationPage() {
     const updated = await mutateAction.run(() => reservationsService.cancel(reservation.id));
     if (updated) {
       setData(updated);
-      setSuccessMessage('Aluguel cancelado.');
+      flash(isPending ? 'Pré-reserva cancelada.' : 'Aluguel cancelado.');
     }
   };
 
   return (
-    <div className="space-y-4">
-      {/* Card Principal da Reserva */}
-      <div className="card space-y-3 border-brand-200 bg-gradient-to-br from-brand-50/70 via-white to-slate-50 shadow-sm">
-        <div className="flex items-center justify-between">
-          <Badge tone={reservationTone(reservation.status)}>
-            {reservationStatusLabels[reservation.status]}
-          </Badge>
-          <span className="text-xs font-semibold text-slate-500">
-            {lockerSizeLabels[reservation.size]} • {periodLabels[reservation.period]}
+    <div className="mx-auto w-full max-w-2xl space-y-4">
+      <Link to="/app/reservations" className="inline-flex items-center gap-1.5 text-sm font-medium text-base-content/70 hover:text-primary">
+        <ArrowLeft className="h-4 w-4" /> Minhas reservas
+      </Link>
+
+      {/* Cartão principal */}
+      <section className={`panel space-y-3 ${isPending ? 'border-warning/50' : isActive ? 'border-success/50' : ''}`}>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <Badge tone={reservationTone(reservation.status)}>{reservationStatusLabels[reservation.status]}</Badge>
+          <span className="text-xs font-medium text-base-content/60">
+            {lockerSizeLabels[reservation.size]} · {periodLabels[reservation.period]}
           </span>
         </div>
 
-        <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
-            Compartimento
-          </span>
-          <p className="text-3xl font-black text-brand-700 tracking-tight">
-            Locker {reservation.lockerCode}
-          </p>
-          <p className="text-sm font-bold text-slate-800 mt-1">{reservation.locationName}</p>
-          <p className="text-xs text-slate-500">{reservation.buildingSummary}</p>
+        <div className="min-w-0">
+          <p className="text-xs font-medium tracking-wide text-base-content/50 uppercase">Compartimento</p>
+          <p className="text-3xl font-bold tracking-tight text-primary">Locker {reservation.lockerCode}</p>
+          <p className="mt-1 font-medium">{reservation.locationName}</p>
+          <p className="text-sm text-base-content/60">{reservation.buildingSummary}</p>
         </div>
 
-        {/* Cronômetro Regressivo ao Vivo */}
-        <div className="flex items-center justify-between border-t border-brand-100/80 pt-3 text-xs">
-          <span className="flex items-center gap-1.5 font-bold text-slate-700">
-            <Clock className="h-4 w-4 text-brand-600" />
-            {isActive ? (
-              countdown.isExpired ? (
-                <span className="text-rose-600 font-extrabold animate-pulse">Prazo encerrado</span>
-              ) : (
-                <span className="font-mono text-emerald-700">Restam {countdown.formatted}</span>
-              )
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-base-300 pt-3 text-sm">
+          <span className="flex min-w-0 items-center gap-1.5 font-medium">
+            {isPending ? (
+              <>
+                <Hourglass className="h-4 w-4 shrink-0 text-warning" /> Começa quando o parceiro confirmar
+              </>
+            ) : isActive ? (
+              <>
+                <Clock className="h-4 w-4 shrink-0 text-success" />
+                {countdown.isExpired ? <span className="text-error">Prazo encerrado</span> : <span className="tabular-nums">Restam {countdown.formatted}</span>}
+              </>
             ) : (
-              `Encerrado em ${formatDateTime(reservation.endTime)}`
+              <>
+                <Clock className="h-4 w-4 shrink-0 text-base-content/50" /> Encerrado em {formatDateTime(reservation.endTime)}
+              </>
             )}
           </span>
-          <strong className="text-slate-900 font-extrabold text-sm">
-            {formatCents(reservation.totalPriceCents)}
-          </strong>
+          <strong className="text-base tabular-nums">{formatCents(reservation.totalPriceCents)}</strong>
         </div>
-      </div>
+        <CopyId id={reservation.id} label="ID da reserva" />
+      </section>
 
-      {successMessage && <SuccessAlert message={successMessage} />}
+      <SuccessAlert message={successMessage} />
       <ErrorAlert message={mutateAction.error} />
 
-      {/* Orientações de Acesso ao Locker Físico (Caixa Preta sob gestão do parceiro) */}
-      <div className="card space-y-2.5 bg-slate-50/80 border-slate-200">
-        <div className="flex items-center gap-2">
-          <Info className="w-4 h-4 text-brand-600 shrink-0" />
-          <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wide">
-            Acesso ao Compartimento Físico
-          </h4>
-        </div>
-        <p className="text-xs text-slate-600 leading-relaxed">
-          O acesso ao <strong>Locker {reservation.lockerCode}</strong> e o controle de fechadura/chave são administrados diretamente pelo responsável pelo espaço ({reservation.locationName}).
+      {/* Pré-reserva: o que fazer agora */}
+      {isPending && (
+        <section className="space-y-2 rounded-box border border-warning/40 bg-warning/10 p-4">
+          <h2 className="section-title">
+            <Hourglass className="h-4 w-4 text-warning" /> Falta só confirmar no local
+          </h2>
+          <ol className="list-inside list-decimal space-y-1 text-sm text-base-content/80">
+            <li>Vá até {reservation.locationName}.</li>
+            <li>
+              Procure o responsável e informe o <strong>locker {reservation.lockerCode}</strong> (ou o ID da reserva).
+            </li>
+            <li>Ele ativa seu aluguel e o período começa a contar a partir daí.</li>
+          </ol>
+        </section>
+      )}
+
+      {/* Acesso ao compartimento */}
+      <section className="panel space-y-2">
+        <h2 className="section-title">
+          <Info className="h-4 w-4 text-primary" /> Como acessar o compartimento
+        </h2>
+        <p className="text-sm text-base-content/70">
+          A chave ou fechadura do <strong>locker {reservation.lockerCode}</strong> é controlada pelo responsável do espaço.
         </p>
         {reservation.accessInstructions && (
-          <div className="p-2.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-700">
-            <span className="font-semibold block text-[11px] text-slate-500 mb-0.5">Orientações do espaço:</span>
-            {reservation.accessInstructions}
-          </div>
+          <p className="rounded-field border border-base-300 bg-base-200/50 p-3 text-sm text-base-content/80">{reservation.accessInstructions}</p>
         )}
-      </div>
+      </section>
 
-      {/* Ações Rápidas de Apoio */}
       <div className="grid grid-cols-2 gap-2">
-        <Link
-          to={`/app/reservations/${reservation.id}/locate`}
-          className="btn-secondary text-xs flex items-center justify-center gap-1.5 py-2.5 font-semibold"
-        >
-          <MapPin className="h-4 w-4 text-brand-600" /> Como chegar
+        <Link to={`/app/reservations/${reservation.id}/locate`} className="btn">
+          <MapPin className="h-4 w-4 text-primary" /> Como chegar
         </Link>
-        <Link
-          to={`/app/support?reservationId=${reservation.id}`}
-          className="btn-secondary text-xs flex items-center justify-center gap-1.5 py-2.5 font-semibold"
-        >
-          <HelpCircle className="h-4 w-4 text-slate-500" /> Suporte
+        <Link to={`/app/support?reservationId=${reservation.id}`} className="btn">
+          <HelpCircle className="h-4 w-4" /> Suporte
         </Link>
       </div>
 
-      {/* Gerenciamento do Aluguel (Prorrogar / Finalizar / Cancelar) */}
+      {isPending && (
+        <button type="button" onClick={() => setCancelDialogOpen(true)} className="btn btn-ghost btn-block text-error">
+          Cancelar pré-reserva
+        </button>
+      )}
+
       {isActive && (
         <div className="space-y-3">
-          {/* Prorrogação */}
-          <div className="card space-y-2.5">
-            <p className="flex items-center gap-1.5 text-xs font-bold tracking-wide text-slate-700 uppercase">
-              <PlusCircle className="h-4 w-4 text-brand-600" /> Prorrogar aluguel
-            </p>
-            <p className="text-xs text-slate-500">
-              Estenda o período de uso mantendo o mesmo compartimento:
-            </p>
+          <section className="panel space-y-3">
+            <h2 className="section-title">
+              <PlusCircle className="h-4 w-4 text-primary" /> Prorrogar aluguel
+            </h2>
+            <p className="text-sm text-base-content/60">Continue com o mesmo compartimento por mais tempo.</p>
             <div className="grid grid-cols-3 gap-2">
               {RENTAL_PERIODS.map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  disabled={mutateAction.pending}
-                  onClick={() => void handleExtend(p)}
-                  className="btn-secondary py-2.5 text-xs font-bold hover:border-brand-500 hover:text-brand-600 transition-all"
-                >
+                <button key={p} type="button" disabled={mutateAction.pending} onClick={() => void handleExtend(p)} className="btn btn-sm">
                   {periodShortLabels[p]}
                 </button>
               ))}
             </div>
-          </div>
+          </section>
 
-          {/* Encerramento com Confirmação */}
-          <div className="card space-y-3 border-rose-100 bg-rose-50/30">
-            <div className="flex items-center justify-between">
-              <p className="flex items-center gap-1.5 text-xs font-bold tracking-wide text-rose-700 uppercase">
-                <Power className="h-4 w-4 text-rose-600" /> Finalizar aluguel
-              </p>
-              <button
-                type="button"
-                onClick={() => setCancelDialogOpen(true)}
-                className="text-[11px] text-slate-400 hover:text-slate-600 underline"
-              >
+          <section className="space-y-3 rounded-box border border-error/30 bg-error/5 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="section-title text-error">
+                <Power className="h-4 w-4" /> Finalizar aluguel
+              </h2>
+              <button type="button" onClick={() => setCancelDialogOpen(true)} className="link link-hover text-xs text-base-content/60">
                 Cancelar reserva
               </button>
             </div>
-            <p className="text-xs text-slate-600">
-              Ao terminar, retire todos os seus objetos pessoais e tranque o armário.
-            </p>
-            <label className="flex items-start gap-2 text-xs font-semibold text-slate-700 cursor-pointer bg-white p-2.5 rounded-xl border border-rose-200">
+            <p className="text-sm text-base-content/70">Ao terminar, retire seus objetos e tranque o compartimento.</p>
+            <label className="flex cursor-pointer items-start gap-2 rounded-field border border-error/20 bg-base-100 p-3 text-sm">
               <input
                 type="checkbox"
-                className="mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                className="checkbox checkbox-sm checkbox-primary mt-0.5 shrink-0"
                 checked={confirmedEmpty}
                 onChange={(e) => setConfirmedEmpty(e.target.checked)}
               />
-              <span>Confirmo que retirei todos os meus pertences e fechei a porta do compartimento.</span>
+              <span className="min-w-0">Confirmo que retirei meus pertences e fechei a porta do compartimento.</span>
             </label>
-            <button
-              type="button"
-              disabled={!confirmedEmpty || mutateAction.pending}
-              onClick={() => void handleComplete()}
-              className="btn-danger w-full py-2.5 text-xs font-bold"
-            >
+            <button type="button" disabled={!confirmedEmpty || mutateAction.pending} onClick={() => void handleComplete()} className="btn btn-error btn-block">
               Encerrar e liberar compartimento
             </button>
-          </div>
+          </section>
         </div>
       )}
 
-      {/* Modal de Cancelamento */}
       <ConfirmationDialog
         isOpen={cancelDialogOpen}
         onClose={() => setCancelDialogOpen(false)}
         onConfirm={handleCancel}
-        title="Cancelar Reserva"
-        description="Deseja realmente cancelar este aluguel antes da utilização?"
-        confirmLabel="Sim, Cancelar"
+        title={isPending ? 'Cancelar pré-reserva?' : 'Cancelar reserva?'}
+        description={isPending ? 'O locker volta a ficar disponível para outras pessoas.' : 'Deseja cancelar este aluguel antes de usar o compartimento?'}
+        confirmLabel="Sim, cancelar"
+        cancelLabel="Voltar"
         variant="warning"
       />
     </div>

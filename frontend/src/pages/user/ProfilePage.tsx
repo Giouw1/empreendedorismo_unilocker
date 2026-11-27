@@ -39,7 +39,7 @@ export default function ProfilePage() {
     <div className="space-y-4">
       <PageHeader title="Meu perfil" subtitle={user.email} />
 
-      <div className="card space-y-2">
+      <div className="panel space-y-2">
         <p className="text-xs font-semibold text-slate-500 uppercase">Perfis ativos</p>
         <div className="flex flex-wrap gap-1.5">
           {user.roles.map((r) => (
@@ -51,12 +51,12 @@ export default function ProfilePage() {
       </div>
 
       {/* Alternador de Área (Parceiro / Admin) */}
-      <div className="card space-y-3 border-amber-200 bg-amber-50/40">
+      <div className="panel space-y-3 border-amber-200 bg-amber-50/40">
         <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
           <Building2 className="h-4 w-4 text-amber-600" /> Área do Ofertador (Parceiro)
         </div>
         {hasRole('PARTNER') ? (
-          <Link to="/partner/dashboard" className="btn-primary w-full text-xs">
+          <Link to="/partner/dashboard" className="btn btn-primary w-full text-xs">
             Acessar Painel do Parceiro
           </Link>
         ) : user.partnerStatus === 'PENDING' ? (
@@ -67,7 +67,7 @@ export default function ProfilePage() {
         ) : (
           <div className="space-y-2 text-xs text-slate-600">
             <p>Possui espaço em laboratório, centro acadêmico ou cantina na UFRJ? Disponibilize lockers e gere receita.</p>
-            <Link to="/partner/apply" className="btn-secondary w-full text-xs">
+            <Link to="/partner/apply" className="btn w-full text-xs">
               Quero ser um Ofertador
             </Link>
           </div>
@@ -75,29 +75,29 @@ export default function ProfilePage() {
       </div>
 
       {hasRole('ADMIN') && (
-        <Link to="/admin/dashboard" className="btn-secondary w-full text-xs">
+        <Link to="/admin/dashboard" className="btn w-full text-xs">
           <Shield className="h-4 w-4 text-brand-600" /> Abrir Painel Administrativo Web
         </Link>
       )}
 
-      <form onSubmit={(e) => void handleSave(e)} className="card space-y-3">
+      <form onSubmit={(e) => void handleSave(e)} className="panel space-y-3">
         <h2 className="text-sm font-bold">Dados cadastrais</h2>
         <ErrorAlert message={error} />
         <SuccessAlert message={saved ? 'Perfil atualizado com sucesso!' : null} />
         <div>
-          <label className="label">Nome</label>
-          <input required className="input" value={name} onChange={(e) => setName(e.target.value)} />
+          <label className="field-label">Nome</label>
+          <input required className="input w-full" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div>
-          <label className="label">Vínculo universitário</label>
-          <input required className="input" value={affiliation} onChange={(e) => setAffiliation(e.target.value)} />
+          <label className="field-label">Vínculo universitário</label>
+          <input required className="input w-full" value={affiliation} onChange={(e) => setAffiliation(e.target.value)} />
         </div>
-        <button type="submit" disabled={pending} className="btn-primary w-full text-xs">
+        <button type="submit" disabled={pending} className="btn btn-primary w-full text-xs">
           {pending && <Spinner />} Salvar alterações
         </button>
       </form>
 
-      <button type="button" onClick={handleLogout} className="btn-secondary w-full text-xs text-red-600">
+      <button type="button" onClick={handleLogout} className="btn w-full text-xs text-red-600">
         <LogOut className="h-4 w-4" /> Sair da conta
       </button>
     </div>

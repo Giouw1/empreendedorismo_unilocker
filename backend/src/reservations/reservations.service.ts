@@ -21,10 +21,11 @@ export class ReservationsService {
       // Compare-and-set dentro da transação impede dois pedidos de ocuparem o mesmo locker.
       const claimed = await tx.locker.updateMany({ where: { id: locker.id, status: 'AVAILABLE' }, data: { status: 'OCCUPIED' } });
       if (claimed.count !== 1) throw new ConflictException('Este compartimento já está ocupado.');
+      // A reserva online nasce como pré-reserva; o período só passa a contar quando o parceiro ativa no local.
       const startTime = this.store.clock.now();
       const r = await tx.reservation.create({ data: { userId: user.id, locationId: location.id, lockerId: locker.id,
         size: dto.size, period: dto.period, startTime, endTime: new Date(startTime.getTime() + PERIOD_DURATION_MS[dto.period]),
-        status: 'Active', totalPriceCents: plan.priceCents }, include: reservationInclude });
+        status: 'PendingConfirmation', totalPriceCents: plan.priceCents }, include: reservationInclude });
       return reservationDto(r);
     });
   }
@@ -68,10 +69,12 @@ export class ReservationsService {
     return this.store.db.atomic(async tx => {
       const r = await this.store.reservation(tx, user, id);
       if (r.status === 'Cancelled') return reservationDto(r);
-      if (await tx.accessEvent.count({ where: { reservationId: id, result: 'CONFIRMED' } })) {
-        throw new ConflictException('Após a primeira abertura, finalize confirmando retirada e fechamento ou solicite suporte.');
+      if (r.status !== 'PendingConfirmation') {
+        if (await tx.accessEvent.count({ where: { reservationId: id, result: 'CONFIRMED' } })) {
+          throw new ConflictException('Após a primeira abertura, finalize confirmando retirada e fechamento ou solicite suporte.');
+        }
+        assertOngoing(r, this.store.clock.now());
       }
-      assertOngoing(r, this.store.clock.now());
       const cancelled = await tx.reservation.update({ where: { id }, data: { status: 'Cancelled' }, include: reservationInclude });
       await tx.locker.update({ where: { id: r.lockerId }, data: { status: 'AVAILABLE' } });
       return reservationDto(cancelled);

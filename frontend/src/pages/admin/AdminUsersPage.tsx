@@ -31,7 +31,7 @@ export default function AdminUsersPage() {
       {!loading && !users?.length && <EmptyState title="Nenhum usuário encontrado" />}
 
       {!!users?.length && (
-        <div className="card overflow-x-auto p-0">
+        <div className="panel overflow-x-auto p-0">
           <table className="table">
             <thead>
               <tr>

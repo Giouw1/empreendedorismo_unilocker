@@ -1,4 +1,6 @@
+import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { Loading } from './components/ui';
 import { RequireAuth } from './components/RequireAuth';
 import UserMobileLayout from './layouts/UserMobileLayout';
 import PartnerLayout from './layouts/PartnerLayout';
@@ -22,7 +24,8 @@ import PartnerDashboardPage from './pages/partner/PartnerDashboardPage';
 import CreateLocationPage from './pages/partner/CreateLocationPage';
 import ManageLockersPage from './pages/partner/ManageLockersPage';
 import PartnerReservationsPage from './pages/partner/PartnerReservationsPage';
-import PartnerFinancialPage from './pages/partner/PartnerFinancialPage';
+// Financeiro carrega os gráficos (recharts) só quando a aba é aberta.
+const PartnerFinancialPage = lazy(() => import('./pages/partner/PartnerFinancialPage'));
 
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
@@ -85,7 +88,14 @@ export default function App() {
         <Route path="locations/new" element={<CreateLocationPage />} />
         <Route path="locations/:id/lockers" element={<ManageLockersPage />} />
         <Route path="reservations" element={<PartnerReservationsPage />} />
-        <Route path="financial" element={<PartnerFinancialPage />} />
+        <Route
+          path="financial"
+          element={
+            <Suspense fallback={<Loading />}>
+              <PartnerFinancialPage />
+            </Suspense>
+          }
+        />
       </Route>
 
       {/* Administrador */}

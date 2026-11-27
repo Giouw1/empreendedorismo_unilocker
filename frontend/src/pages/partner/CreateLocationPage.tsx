@@ -1,31 +1,13 @@
-import { useState, type FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AlertTriangle, ArrowLeft, ArrowRight, Building2, Check, Handshake, Plus, RotateCcw, ShieldCheck, Tag, Trash2 } from 'lucide-react';
 import { partnerService } from '../../services/partner.service';
 import { useAction } from '../../hooks/useAsync';
 import { useLocalStorageDraft } from '../../hooks/useLocalStorageDraft';
-import {
-  CAMPUS_OPTIONS,
-  LOCKER_SIZES,
-  lockerSizeLabels,
-  periodLabels,
-  RENTAL_PERIODS,
-} from '../../utils/formatters';
-import {
-  validateLocationStep1,
-  validateLocationStep2,
-} from '../../utils/validators';
-import type { LockerInput, LockerSize, PricingPlanInput, RentalPeriod } from '../../types/api';
+import { CAMPUS_OPTIONS, formatCents, LOCKER_SIZES, lockerSizeLabels, periodLabels, RENTAL_PERIODS } from '../../utils/formatters';
+import { isValidEmail, validateLocationStep1, validateLocationStep2 } from '../../utils/validators';
+import { MIN_PRICE_CENTS, type LockerInput, type LockerSize, type PricingPlanInput, type RentalPeriod } from '../../types/api';
 import { ErrorAlert, PageHeader, Spinner } from '../../components/ui';
-import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  Plus,
-  Trash2,
-  Building2,
-  ShieldCheck,
-  RotateCcw,
-} from 'lucide-react';
 
 interface LocationDraftState {
   name: string;
@@ -39,6 +21,9 @@ interface LocationDraftState {
   accessInstructions: string;
   usageRules: string;
   coverPhotoUrl: string;
+  hostName: string;
+  contactPhone: string;
+  contactEmail: string;
   lockersData: LockerInput[];
   pricesBrl: Record<LockerSize, Record<RentalPeriod, string>>;
 }
@@ -54,7 +39,10 @@ const defaultDraft: LocationDraftState = {
   openingHours: 'Seg a Sex, 08:00 às 21:00',
   accessInstructions: 'Suba a escada principal do Bloco H até o 2º andar e vire à direita.',
   usageRules: 'Proibido armazenar alimentos perecíveis. Retire os pertences até o horário de fechamento.',
-  coverPhotoUrl: 'https://images.unsplash.com/photo-1562774053-701939374585?w=800',
+  coverPhotoUrl: '/locations/ct-fachada.jpg',
+  hostName: '',
+  contactPhone: '',
+  contactEmail: '',
   lockersData: [
     { code: 'H-01', size: 'SMALL' },
     { code: 'H-02', size: 'MEDIUM' },
@@ -62,85 +50,103 @@ const defaultDraft: LocationDraftState = {
     { code: 'H-04', size: 'LARGE' },
   ],
   pricesBrl: {
-    SMALL: { DAILY: '5', WEEKLY: '25', MONTHLY: '80' },
-    MEDIUM: { DAILY: '8', WEEKLY: '40', MONTHLY: '120' },
-    LARGE: { DAILY: '12', WEEKLY: '60', MONTHLY: '180' },
+    SMALL: { DAILY: '5', WEEKLY: '25', MONTHLY: '100' },
+    MEDIUM: { DAILY: '8', WEEKLY: '40', MONTHLY: '140' },
+    LARGE: { DAILY: '12', WEEKLY: '60', MONTHLY: '200' },
   },
 };
+
+const PERIOD_DAYS: Record<RentalPeriod, number> = { DAILY: 1, WEEKLY: 7, MONTHLY: 30 };
+
+function parseBrl(value: string): number | null {
+  if (!value.trim()) return null;
+  const n = Number(value.replace(',', '.'));
+  return Number.isFinite(n) ? Math.round(n * 100) : null;
+}
+
+/** Erros (bloqueiam) e avisos (não bloqueiam) da tabela de preços. */
+function checkPrices(sizes: LockerSize[], prices: LocationDraftState['pricesBrl']) {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  for (const size of sizes) {
+    const cents = RENTAL_PERIODS.map((p) => parseBrl(prices[size][p]));
+    RENTAL_PERIODS.forEach((period, i) => {
+      const c = cents[i];
+      if (c === null) errors.push(`Informe o preço ${periodLabels[period].toLowerCase()} do tamanho ${lockerSizeLabels[size].toLowerCase()}.`);
+      else if (c < MIN_PRICE_CENTS[period])
+        errors.push(`${lockerSizeLabels[size]} · ${periodLabels[period]}: o mínimo é ${formatCents(MIN_PRICE_CENTS[period])}.`);
+    });
+    const perDay = RENTAL_PERIODS.map((p, i) => (cents[i] ?? 0) / PERIOD_DAYS[p]);
+    if (cents.every((c) => c !== null)) {
+      if (perDay[1] > perDay[0]) warnings.push(`${lockerSizeLabels[size]}: o semanal sai mais caro por dia que o diário.`);
+      if (perDay[2] > perDay[1]) warnings.push(`${lockerSizeLabels[size]}: o mensal sai mais caro por dia que o semanal.`);
+    }
+  }
+  return { errors, warnings };
+}
+
+function Field({ label, hint, children, className = '' }: { label: string; hint?: string; children: ReactNode; className?: string }) {
+  return (
+    <label className={`block min-w-0 ${className}`}>
+      <span className="field-label">{label}</span>
+      {children}
+      {hint && <span className="mt-1 block text-xs text-base-content/50">{hint}</span>}
+    </label>
+  );
+}
 
 export default function CreateLocationPage() {
   const navigate = useNavigate();
   const { pending, error, run } = useAction();
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [stepError, setStepError] = useState<string | null>(null);
-
-  const [draft, setDraft, clearDraft] = useLocalStorageDraft<LocationDraftState>(
-    'unilocker_partner_location_wizard_draft',
-    defaultDraft,
-  );
-
+  const [draft, setDraft, clearDraft] = useLocalStorageDraft<LocationDraftState>('unilocker_partner_location_wizard_draft_v2', defaultDraft);
   const [newCode, setNewCode] = useState('H-05');
   const [newSize, setNewSize] = useState<LockerSize>('MEDIUM');
 
-  // Adicionar armário à lista
+  const update = <K extends keyof LocationDraftState>(key: K, value: LocationDraftState[K]) => setDraft((p) => ({ ...p, [key]: value }));
+  const usedSizes = useMemo(() => LOCKER_SIZES.filter((s) => draft.lockersData.some((l) => l.size === s)), [draft.lockersData]);
+  const priceCheck = useMemo(() => checkPrices(usedSizes, draft.pricesBrl), [usedSizes, draft.pricesBrl]);
+
   const handleAddLocker = () => {
-    if (!newCode.trim()) return;
-    const codeUpper = newCode.trim().toUpperCase();
-    if (draft.lockersData.some((l) => l.code === codeUpper)) {
-      setStepError(`Já existe um compartimento com o código ${codeUpper}.`);
+    const code = newCode.trim().toUpperCase();
+    if (!code) return;
+    if (draft.lockersData.some((l) => l.code === code)) {
+      setStepError(`Já existe um compartimento com o código ${code}.`);
       return;
     }
-    setDraft((prev) => ({
-      ...prev,
-      lockersData: [...prev.lockersData, { code: codeUpper, size: newSize }],
-    }));
+    setDraft((p) => ({ ...p, lockersData: [...p.lockersData, { code, size: newSize }] }));
     setNewCode('');
     setStepError(null);
   };
 
-  const handleRemoveLocker = (idx: number) => {
-    setDraft((prev) => ({
-      ...prev,
-      lockersData: prev.lockersData.filter((_, i) => i !== idx),
-    }));
-  };
-
-  // Navegação entre etapas com validação
   const goToNextStep = () => {
     setStepError(null);
     if (step === 1) {
       const v = validateLocationStep1(draft);
-      if (!v.valid) {
-        setStepError(Object.values(v.errors)[0]);
-        return;
-      }
+      if (!v.valid) return setStepError(Object.values(v.errors)[0]);
+      if (draft.contactEmail.trim() && !isValidEmail(draft.contactEmail)) return setStepError('Informe um e-mail de contato válido.');
       setStep(2);
     } else if (step === 2) {
       const v = validateLocationStep2(draft.lockersData);
-      if (!v.valid) {
-        setStepError(v.error || 'Configure ao menos um compartimento válido.');
-        return;
-      }
+      if (!v.valid) return setStepError(v.error || 'Configure ao menos um compartimento válido.');
       setStep(3);
     } else if (step === 3) {
+      if (priceCheck.errors.length) return setStepError(priceCheck.errors[0]);
       setStep(4);
     }
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setStepError(null);
-
-    const pricingPlans: PricingPlanInput[] = [];
-    LOCKER_SIZES.forEach((size) => {
-      RENTAL_PERIODS.forEach((period) => {
-        const val = Number(draft.pricesBrl[size][period]);
-        if (val > 0) {
-          pricingPlans.push({ size, period, priceCents: Math.round(val * 100) });
-        }
-      });
-    });
-
+    if (priceCheck.errors.length) {
+      setStep(3);
+      setStepError(priceCheck.errors[0]);
+      return;
+    }
+    const pricingPlans: PricingPlanInput[] = usedSizes.flatMap((size) =>
+      RENTAL_PERIODS.map((period) => ({ size, period, priceCents: parseBrl(draft.pricesBrl[size][period]) ?? 0 })),
+    );
     const created = await run(() =>
       partnerService.createLocation({
         locationData: {
@@ -157,426 +163,255 @@ export default function CreateLocationPage() {
           accessInstructions: draft.accessInstructions,
           usageRules: draft.usageRules,
           photoUrls: draft.coverPhotoUrl ? [draft.coverPhotoUrl] : [],
+          hostName: draft.hostName.trim(),
+          contactPhone: draft.contactPhone.trim(),
+          contactEmail: draft.contactEmail.trim(),
         },
         lockersData: draft.lockersData,
         pricingPlans,
       }),
     );
-
     if (created) {
       clearDraft();
       navigate('/partner/dashboard');
     }
   };
 
-  const stepsHeader = [
-    { num: 1, title: 'Localização' },
-    { num: 2, title: 'Armários' },
-    { num: 3, title: 'Preços' },
-    { num: 4, title: 'Prévia' },
-  ];
+  const steps = ['Local', 'Lockers', 'Preços', 'Revisão'];
+  const nav = (back: (() => void) | null, nextLabel: string) => (
+    <div className="flex gap-2 pt-2">
+      {back && (
+        <button type="button" onClick={back} className="btn flex-1">
+          <ArrowLeft className="h-4 w-4" /> Voltar
+        </button>
+      )}
+      <button type="button" onClick={goToNextStep} className="btn btn-primary flex-1">
+        {nextLabel} <ArrowRight className="h-4 w-4" />
+      </button>
+    </div>
+  );
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Link
-          to="/partner/dashboard"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-brand-600 transition-colors"
-        >
+    <div className="mx-auto w-full max-w-3xl space-y-4">
+      <div className="flex items-center justify-between gap-2">
+        <Link to="/partner/dashboard" className="inline-flex items-center gap-1.5 text-sm font-medium text-base-content/70 hover:text-primary">
           <ArrowLeft className="h-4 w-4" /> Cancelar
         </Link>
-        <button
-          type="button"
-          onClick={clearDraft}
-          className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-slate-600"
-          title="Restaurar formulário padrão"
-        >
-          <RotateCcw className="w-3.5 h-3.5" /> Limpar rascunho
+        <button type="button" onClick={clearDraft} className="btn btn-ghost btn-xs text-base-content/60" title="Restaurar formulário padrão">
+          <RotateCcw className="h-3.5 w-3.5" /> Limpar rascunho
         </button>
       </div>
 
-      <PageHeader
-        title="Novo Ponto de Lockers"
-        subtitle="Siga o assistente de 4 etapas para cadastrar e submeter seu espaço"
-      />
+      <PageHeader title="Novo ponto de lockers" subtitle="Quatro passos rápidos. Depois, a equipe UniLocker aprova a publicação." />
 
-      {/* Barra de Progresso do Wizard */}
-      <div className="grid grid-cols-4 gap-2">
-        {stepsHeader.map((s) => {
-          const isDone = step > s.num;
-          const isCurrent = step === s.num;
-          return (
-            <div
-              key={s.num}
-              className={`p-2 rounded-xl text-center border-2 transition-all ${
-                isCurrent
-                  ? 'border-brand-600 bg-brand-50/60 font-black text-brand-700 shadow-xs'
-                  : isDone
-                  ? 'border-emerald-500 bg-emerald-50/40 text-emerald-800'
-                  : 'border-slate-200 bg-white text-slate-400'
-              }`}
-            >
-              <div className="flex items-center justify-center gap-1 text-xs">
-                {isDone ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                ) : (
-                  <span>{s.num}.</span>
-                )}
-                <span>{s.title}</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <ul className="steps steps-horizontal w-full text-xs">
+        {steps.map((title, i) => (
+          <li key={title} className={`step ${step >= i + 1 ? 'step-primary' : ''}`}>
+            {title}
+          </li>
+        ))}
+      </ul>
 
-      {stepError && <ErrorAlert message={stepError} />}
+      <ErrorAlert message={stepError} />
       <ErrorAlert message={error} />
 
-      {/* ETAPA 1 — LOCALIZAÇÃO */}
       {step === 1 && (
-        <div className="card space-y-3">
-          <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2 pb-2 border-b border-slate-100">
-            <Building2 className="w-4 h-4 text-brand-600" /> Informações do Espaço Físico
-          </h3>
-
-          <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">Nome do Ponto</label>
-            <input
-              className="input text-xs"
-              value={draft.name}
-              onChange={(e) => setDraft((p) => ({ ...p, name: e.target.value }))}
-              placeholder="Ex: Espaço Maker Poli — Bloco F"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Campus</label>
-              <select
-                className="input text-xs"
-                value={draft.campus}
-                onChange={(e) => setDraft((p) => ({ ...p, campus: e.target.value }))}
-              >
-                {CAMPUS_OPTIONS.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+        <div className="space-y-4">
+          <section className="panel space-y-3">
+            <h2 className="section-title border-b border-base-300 pb-2">
+              <Building2 className="h-4 w-4 text-primary" /> Onde fica
+            </h2>
+            <Field label="Nome do ponto">
+              <input className="input w-full" value={draft.name} onChange={(e) => update('name', e.target.value)} placeholder="Ex.: Espaço Maker Poli — Bloco F" />
+            </Field>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Campus">
+                <select className="select w-full" value={draft.campus} onChange={(e) => update('campus', e.target.value)}>
+                  {CAMPUS_OPTIONS.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Prédio">
+                <input className="input w-full" value={draft.building} onChange={(e) => update('building', e.target.value)} placeholder="Ex.: Centro de Tecnologia" />
+              </Field>
+              <Field label="Bloco">
+                <input className="input w-full" value={draft.block} onChange={(e) => update('block', e.target.value)} placeholder="Ex.: Bloco H" />
+              </Field>
+              <Field label="Andar">
+                <input className="input w-full" value={draft.floor} onChange={(e) => update('floor', e.target.value)} placeholder="Ex.: 2º andar" />
+              </Field>
+              <Field label="Sala ou corredor">
+                <input className="input w-full" value={draft.roomOrCorridor} onChange={(e) => update('roomOrCorridor', e.target.value)} placeholder="Ex.: Hall da biblioteca" />
+              </Field>
+              <Field label="Ponto de referência">
+                <input className="input w-full" value={draft.reference} onChange={(e) => update('reference', e.target.value)} placeholder="Ex.: Ao lado dos bebedouros" />
+              </Field>
             </div>
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Edifício / Prédio</label>
-              <input
-                className="input text-xs"
-                value={draft.building}
-                onChange={(e) => setDraft((p) => ({ ...p, building: e.target.value }))}
-                placeholder="Ex: Centro de Tecnologia"
-              />
+            <Field label="Horário de funcionamento">
+              <input className="input w-full" value={draft.openingHours} onChange={(e) => update('openingHours', e.target.value)} placeholder="Ex.: Seg a Sex, 08:00 às 21:00" />
+            </Field>
+            <Field label="Como chegar até os lockers">
+              <textarea className="textarea min-h-20 w-full" value={draft.accessInstructions} onChange={(e) => update('accessInstructions', e.target.value)} />
+            </Field>
+            <Field label="Foto do local (URL)" hint="Use uma foto real da fachada ou do espaço.">
+              <input className="input w-full" value={draft.coverPhotoUrl} onChange={(e) => update('coverPhotoUrl', e.target.value)} placeholder="https://…" />
+            </Field>
+          </section>
+
+          <section className="panel space-y-3">
+            <h2 className="section-title border-b border-base-300 pb-2">
+              <Handshake className="h-4 w-4 text-primary" /> Parceiro deste ponto
+            </h2>
+            <p className="text-xs text-base-content/60">É o nome e o contato que os alunos veem na página do ponto. Se ficar em branco, usamos os dados da sua organização.</p>
+            <Field label="Nome do parceiro">
+              <input className="input w-full" value={draft.hostName} onChange={(e) => update('hostName', e.target.value)} placeholder="Ex.: Centro Acadêmico de Engenharia (CAEng)" />
+            </Field>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Telefone / WhatsApp">
+                <input className="input w-full" inputMode="tel" value={draft.contactPhone} onChange={(e) => update('contactPhone', e.target.value)} placeholder="(21) 99999-0000" />
+              </Field>
+              <Field label="E-mail">
+                <input className="input w-full" type="email" value={draft.contactEmail} onChange={(e) => update('contactEmail', e.target.value)} placeholder="contato@ufrj.br" />
+              </Field>
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Bloco</label>
-              <input
-                className="input text-xs"
-                value={draft.block}
-                onChange={(e) => setDraft((p) => ({ ...p, block: e.target.value }))}
-                placeholder="Ex: Bloco H"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Andar</label>
-              <input
-                className="input text-xs"
-                value={draft.floor}
-                onChange={(e) => setDraft((p) => ({ ...p, floor: e.target.value }))}
-                placeholder="Ex: 2º andar"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Sala ou Corredor</label>
-              <input
-                className="input text-xs"
-                value={draft.roomOrCorridor}
-                onChange={(e) => setDraft((p) => ({ ...p, roomOrCorridor: e.target.value }))}
-                placeholder="Ex: Hall da biblioteca"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Ponto de Referência</label>
-              <input
-                className="input text-xs"
-                value={draft.reference}
-                onChange={(e) => setDraft((p) => ({ ...p, reference: e.target.value }))}
-                placeholder="Ex: Ao lado dos bebedouros"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">Horário de Funcionamento</label>
-            <input
-              className="input text-xs"
-              value={draft.openingHours}
-              onChange={(e) => setDraft((p) => ({ ...p, openingHours: e.target.value }))}
-              placeholder="Ex: Seg a Sex, 08:00 às 21:00"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">Instruções de Acesso</label>
-            <textarea
-              className="input text-xs min-h-[60px]"
-              value={draft.accessInstructions}
-              onChange={(e) => setDraft((p) => ({ ...p, accessInstructions: e.target.value }))}
-              placeholder="Explique como o aluno sobe até o local..."
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">URL da Foto de Capa</label>
-            <input
-              className="input text-xs"
-              value={draft.coverPhotoUrl}
-              onChange={(e) => setDraft((p) => ({ ...p, coverPhotoUrl: e.target.value }))}
-              placeholder="https://images.unsplash.com/..."
-            />
-          </div>
-
-          <button
-            type="button"
-            onClick={goToNextStep}
-            className="btn-primary w-full py-3 text-xs font-bold flex items-center justify-center gap-1.5"
-          >
-            <span>Avançar para Armários</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
+          </section>
+          {nav(null, 'Próximo: lockers')}
         </div>
       )}
 
-      {/* ETAPA 2 — COMPARTIMENTOS */}
       {step === 2 && (
-        <div className="card space-y-4">
-          <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2 pb-2 border-b border-slate-100">
-            Adicionar Compartimentos de Lockers
-          </h3>
-
-          <div className="flex gap-2 items-end bg-slate-50 p-3 rounded-2xl border border-slate-100">
-            <div className="flex-1">
-              <label className="text-xs font-bold text-slate-700 block mb-1">Identificação / Código</label>
-              <input
-                className="input text-xs uppercase"
-                value={newCode}
-                onChange={(e) => setNewCode(e.target.value)}
-                placeholder="Ex: H-05"
-              />
-            </div>
-            <div className="w-32">
-              <label className="text-xs font-bold text-slate-700 block mb-1">Tamanho</label>
-              <select
-                className="input text-xs"
-                value={newSize}
-                onChange={(e) => setNewSize(e.target.value as LockerSize)}
-              >
+        <section className="panel space-y-4">
+          <h2 className="section-title border-b border-base-300 pb-2">Compartimentos</h2>
+          <div className="flex flex-wrap items-end gap-2 rounded-box bg-base-200/60 p-3">
+            <Field label="Código" className="min-w-28 flex-1">
+              <input className="input w-full uppercase" value={newCode} onChange={(e) => setNewCode(e.target.value)} placeholder="Ex.: H-05" />
+            </Field>
+            <Field label="Tamanho" className="w-36">
+              <select className="select w-full" value={newSize} onChange={(e) => setNewSize(e.target.value as LockerSize)}>
                 {LOCKER_SIZES.map((s) => (
                   <option key={s} value={s}>
                     {lockerSizeLabels[s]}
                   </option>
                 ))}
               </select>
-            </div>
-            <button
-              type="button"
-              onClick={handleAddLocker}
-              className="btn-primary px-4 py-2.5 text-xs font-bold flex items-center gap-1"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Adicionar</span>
+            </Field>
+            <button type="button" onClick={handleAddLocker} className="btn btn-primary">
+              <Plus className="h-4 w-4" /> Adicionar
             </button>
           </div>
 
-          <div className="space-y-1.5 max-h-60 overflow-y-auto">
-            <span className="text-xs font-bold text-slate-500 block">
-              Total configurado: {draft.lockersData.length} compartimentos
-            </span>
+          <p className="text-sm text-base-content/60">{draft.lockersData.length} compartimentos</p>
+          <ul className="grid max-h-72 gap-2 overflow-y-auto sm:grid-cols-2">
             {draft.lockersData.map((locker, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200 text-xs"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-lg bg-slate-100 font-bold flex items-center justify-center text-slate-800">
-                    {locker.code}
-                  </span>
-                  <span className="font-semibold text-slate-700">
-                    Tamanho {lockerSizeLabels[locker.size]}
-                  </span>
-                </div>
+              <li key={locker.code} className="flex items-center justify-between gap-2 rounded-field border border-base-300 bg-base-100 p-2">
+                <span className="flex min-w-0 items-center gap-2">
+                  <span className="inline-flex h-8 min-w-8 shrink-0 items-center justify-center rounded-field bg-base-200 px-1.5 text-xs font-bold">{locker.code}</span>
+                  <span className="truncate text-sm">{lockerSizeLabels[locker.size]}</span>
+                </span>
                 <button
                   type="button"
-                  onClick={() => handleRemoveLocker(idx)}
-                  className="text-slate-400 hover:text-rose-600 p-1"
+                  onClick={() => setDraft((p) => ({ ...p, lockersData: p.lockersData.filter((_, i) => i !== idx) }))}
+                  className="btn btn-ghost btn-sm btn-square text-base-content/50 hover:text-error"
+                  aria-label={`Remover ${locker.code}`}
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="h-4 w-4" />
                 </button>
-              </div>
+              </li>
             ))}
-          </div>
-
-          <div className="flex gap-2 pt-2">
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              className="btn-secondary flex-1 py-3 text-xs font-bold flex items-center justify-center gap-1.5"
-            >
-              <ArrowLeft className="w-4 h-4" /> Voltar
-            </button>
-            <button
-              type="button"
-              onClick={goToNextStep}
-              className="btn-primary flex-1 py-3 text-xs font-bold flex items-center justify-center gap-1.5"
-            >
-              <span>Avançar para Preços</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+          </ul>
+          {nav(() => setStep(1), 'Próximo: preços')}
+        </section>
       )}
 
-      {/* ETAPA 3 — PREÇOS E REGRAS */}
       {step === 3 && (
-        <div className="card space-y-4">
-          <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2 pb-2 border-b border-slate-100">
-            Definir Tabela de Preços e Regras de Uso
-          </h3>
-
+        <section className="panel space-y-4">
+          <h2 className="section-title border-b border-base-300 pb-2">
+            <Tag className="h-4 w-4 text-primary" /> Preços
+          </h2>
+          <div className="rounded-box bg-base-200/60 p-3 text-xs text-base-content/70">
+            Mínimos: diário {formatCents(MIN_PRICE_CENTS.DAILY)}, semanal {formatCents(MIN_PRICE_CENTS.WEEKLY)} e mensal {formatCents(MIN_PRICE_CENTS.MONTHLY)}.
+            Planos mais longos devem sair mais baratos por dia, para incentivar aluguéis longos.
+          </div>
           <div className="space-y-3">
-            {LOCKER_SIZES.map((size) => (
-              <div key={size} className="p-3 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
-                <span className="text-xs font-bold text-slate-800">
-                  Tamanho {lockerSizeLabels[size]}
-                </span>
+            {usedSizes.map((size) => (
+              <div key={size} className="space-y-2 rounded-box border border-base-300 p-3">
+                <p className="text-sm font-semibold">Tamanho {lockerSizeLabels[size].toLowerCase()}</p>
                 <div className="grid grid-cols-3 gap-2">
-                  {RENTAL_PERIODS.map((period) => (
-                    <div key={period}>
-                      <label className="text-[11px] text-slate-500 block mb-1">
-                        {periodLabels[period]} (R$)
+                  {RENTAL_PERIODS.map((period) => {
+                    const cents = parseBrl(draft.pricesBrl[size][period]);
+                    const tooLow = cents !== null && cents < MIN_PRICE_CENTS[period];
+                    return (
+                      <label key={period} className="block min-w-0">
+                        <span className="mb-1 block truncate text-xs text-base-content/60">{periodLabels[period].split(' ')[0]} (R$)</span>
+                        <input
+                          type="number"
+                          min={MIN_PRICE_CENTS[period] / 100}
+                          step="0.5"
+                          inputMode="decimal"
+                          className={`input w-full ${tooLow ? 'input-error' : ''}`}
+                          value={draft.pricesBrl[size][period]}
+                          onChange={(e) => setDraft((p) => ({ ...p, pricesBrl: { ...p.pricesBrl, [size]: { ...p.pricesBrl[size], [period]: e.target.value } } }))}
+                        />
+                        <span className={`mt-1 block truncate text-[11px] ${tooLow ? 'text-error' : 'text-base-content/50'}`}>
+                          {tooLow ? `mín. ${formatCents(MIN_PRICE_CENTS[period])}` : cents ? `${formatCents(Math.round(cents / PERIOD_DAYS[period]))}/dia` : '—'}
+                        </span>
                       </label>
-                      <input
-                        type="number"
-                        min="1"
-                        className="input text-xs"
-                        value={draft.pricesBrl[size][period]}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setDraft((p) => ({
-                            ...p,
-                            pricesBrl: {
-                              ...p.pricesBrl,
-                              [size]: {
-                                ...p.pricesBrl[size],
-                                [period]: val,
-                              },
-                            },
-                          }));
-                        }}
-                      />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))}
           </div>
-
-          <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">Regras de Utilização do Espaço</label>
-            <textarea
-              className="input text-xs min-h-[60px]"
-              value={draft.usageRules}
-              onChange={(e) => setDraft((p) => ({ ...p, usageRules: e.target.value }))}
-            />
-          </div>
-
-          <div className="flex gap-2 pt-2">
-            <button
-              type="button"
-              onClick={() => setStep(2)}
-              className="btn-secondary flex-1 py-3 text-xs font-bold flex items-center justify-center gap-1.5"
-            >
-              <ArrowLeft className="w-4 h-4" /> Voltar
-            </button>
-            <button
-              type="button"
-              onClick={goToNextStep}
-              className="btn-primary flex-1 py-3 text-xs font-bold flex items-center justify-center gap-1.5"
-            >
-              <span>Ver Prévia</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+          {priceCheck.warnings.length > 0 && (
+            <div role="status" className="alert alert-warning alert-soft items-start text-sm">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              <ul className="min-w-0 space-y-0.5">
+                {priceCheck.warnings.map((w) => (
+                  <li key={w}>{w}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <Field label="Regras de uso do espaço">
+            <textarea className="textarea min-h-20 w-full" value={draft.usageRules} onChange={(e) => update('usageRules', e.target.value)} />
+          </Field>
+          {nav(() => setStep(2), 'Revisar')}
+        </section>
       )}
 
-      {/* ETAPA 4 — PRÉVIA E ENVIO */}
       {step === 4 && (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="card space-y-3 border-brand-200 bg-brand-50/20">
-            <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2 pb-2 border-b border-brand-100">
-              <ShieldCheck className="w-4 h-4 text-brand-600" /> Prévia do Ponto antes do Envio
-            </h3>
-
-            <div className="text-xs space-y-2">
-              <div className="flex justify-between">
-                <span className="text-slate-500">Nome:</span>
-                <span className="font-bold text-slate-900">{draft.name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Localização:</span>
-                <span className="text-right">
-                  {draft.campus} — {draft.building}, {draft.block} ({draft.floor})
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Horário:</span>
-                <span>{draft.openingHours}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Total de Compartimentos:</span>
-                <span className="font-bold text-brand-700">
-                  {draft.lockersData.length} armários
-                </span>
-              </div>
-            </div>
-
-            <div className="p-3 rounded-xl bg-white border border-slate-200 text-xs">
-              <span className="font-bold text-slate-700 block mb-1">Divisão de Receitas (Modelo MVP):</span>
-              <p className="text-slate-500">
-                • <strong>90%</strong> do valor de cada aluguel vai diretamente para a sua organização.
-                <br />• <strong>10%</strong> taxa de operação da plataforma UniLocker.
-              </p>
-            </div>
-          </div>
-
+        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
+          <section className="panel space-y-3">
+            <h2 className="section-title border-b border-base-300 pb-2">
+              <ShieldCheck className="h-4 w-4 text-primary" /> Revisão
+            </h2>
+            <dl className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-[auto_1fr]">
+              <dt className="text-base-content/60">Nome</dt>
+              <dd className="font-medium">{draft.name}</dd>
+              <dt className="text-base-content/60">Local</dt>
+              <dd>
+                {draft.campus} — {draft.building}, {draft.block} ({draft.floor})
+              </dd>
+              <dt className="text-base-content/60">Horário</dt>
+              <dd>{draft.openingHours}</dd>
+              <dt className="text-base-content/60">Parceiro</dt>
+              <dd>{draft.hostName || 'Sua organização'}{draft.contactPhone && ` · ${draft.contactPhone}`}</dd>
+              <dt className="text-base-content/60">Compartimentos</dt>
+              <dd>{draft.lockersData.length}</dd>
+            </dl>
+            <p className="rounded-field bg-base-200/60 p-3 text-xs text-base-content/60">
+              Você recebe 90% de cada aluguel. A taxa de tecnologia da UniLocker é de 10%.
+            </p>
+          </section>
           <div className="flex gap-2">
-            <button
-              type="button"
-              disabled={pending}
-              onClick={() => setStep(3)}
-              className="btn-secondary flex-1 py-3.5 text-xs font-bold"
-            >
-              <ArrowLeft className="w-4 h-4 inline mr-1" /> Ajustar Preços
+            <button type="button" disabled={pending} onClick={() => setStep(3)} className="btn flex-1">
+              <ArrowLeft className="h-4 w-4" /> Ajustar preços
             </button>
-            <button
-              type="submit"
-              disabled={pending}
-              className="btn-primary flex-1 py-3.5 text-xs font-bold shadow-lg shadow-brand-600/25"
-            >
-              {pending ? <Spinner /> : <Check className="w-4 h-4 inline mr-1" />}
-              Submeter para Aprovação
+            <button type="submit" disabled={pending} className="btn btn-primary flex-1">
+              {pending ? <Spinner /> : <Check className="h-4 w-4" />} Enviar para aprovação
             </button>
           </div>
         </form>

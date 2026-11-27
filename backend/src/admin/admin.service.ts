@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import * as C from '../common/contracts/api.contracts';
 import { Store } from '../common/store.service';
-import { LOCKER_HOLDING_STATUSES, PERIODS, splitRevenue } from '../common/domain';
+import { LOCKER_HOLDING_STATUSES, NON_REVENUE_STATUSES, PERIODS, splitRevenue } from '../common/domain';
 import { locationDetail, locationInclude, partnerDto, reservationDto, reservationInclude, rolesOf, ticketDto, ticketInclude, userDto } from '../common/mappers';
 @Injectable()
 export class AdminService {
@@ -12,7 +12,7 @@ export class AdminService {
     const [totalUsers, activePartners, pendingPartners, totalLocations, pendingLocations, operationalLockers, activeRentals, rentals, openIncidents] = await Promise.all([
       db.user.count(), db.partner.count({ where: { status: 'APPROVED' } }), db.partner.count({ where: { status: 'PENDING' } }), db.location.count(),
       db.location.count({ where: { status: 'PENDING_APPROVAL' } }), db.locker.count({ where: { status: { in: ['AVAILABLE', 'OCCUPIED'] } } }),
-      db.reservation.count({ where: { status: { in: LOCKER_HOLDING_STATUSES } } }), db.reservation.findMany({ where: { status: { not: 'Cancelled' } } }),
+      db.reservation.count({ where: { status: { in: LOCKER_HOLDING_STATUSES } } }), db.reservation.findMany({ where: { status: { notIn: NON_REVENUE_STATUSES } } }),
       db.supportTicket.count({ where: { status: { in: ['OPEN', 'IN_PROGRESS'] } } }),
     ]);
     return { totalUsers, activePartners, pendingPartners, totalLocations, pendingLocations, operationalLockers, activeRentals,

@@ -47,49 +47,33 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="space-y-4">
-      <Link
-        to={`/app/locations/${location.id}`}
-        className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-brand-600 transition-colors"
-      >
+    <div className="mx-auto w-full max-w-xl space-y-4">
+      <Link to={`/app/locations/${location.id}`} className="inline-flex items-center gap-1.5 text-sm font-medium text-base-content/70 hover:text-primary">
         <ArrowLeft className="h-4 w-4" /> Voltar ao ponto
       </Link>
 
-      <PageHeader
-        title="Confirmar reserva"
-        subtitle="Revise os detalhes da contratação antes de ativar o guarda-volumes"
-      />
+      <PageHeader title="Confirmar pré-reserva" subtitle="Revise os detalhes. O aluguel começa quando o parceiro confirmar sua chegada no local." />
 
       <ErrorAlert message={submitError} />
 
       {plan && (
-        <PriceSummary
-          period={state.period}
-          size={state.size}
-          amountCents={plan.priceCents}
-          locationName={location.name}
-          lockerCode={state.lockerCode}
-        />
+        <PriceSummary period={state.period} size={state.size} amountCents={plan.priceCents} locationName={location.name} lockerCode={state.lockerCode} />
       )}
 
-      {/* Regras e Instruções */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-2 text-xs text-slate-600">
-        <h4 className="font-bold text-slate-900 flex items-center gap-1.5">
-          <ShieldCheck className="w-4 h-4 text-brand-600" /> Instruções de uso e horários
-        </h4>
-        <p>• {location.openingHours ? `Horário do local: ${location.openingHours}` : 'Acesso durante horário acadêmico'}</p>
-        <p>• {location.usageRules || 'Não armazene substâncias ilícitas, inflamáveis ou perecíveis.'}</p>
-        <p>• O acerto financeiro e a liberação física do compartimento são combinados diretamente com o responsável pelo espaço.</p>
-      </div>
+      <section className="panel space-y-2 text-sm text-base-content/70">
+        <h2 className="section-title">
+          <ShieldCheck className="h-4 w-4 text-primary" /> Antes de confirmar
+        </h2>
+        <ul className="list-inside list-disc space-y-1">
+          <li>{location.openingHours ? `Horário do local: ${location.openingHours}` : 'Acesso durante o horário acadêmico.'}</li>
+          <li>{location.usageRules || 'Não guarde itens ilícitos, inflamáveis ou perecíveis.'}</li>
+          <li>O pagamento e a entrega da chave são feitos no local, com {location.partnerName}.</li>
+        </ul>
+      </section>
 
-      <button
-        type="button"
-        disabled={pending || !plan}
-        onClick={() => void handleConfirm()}
-        className="btn-primary w-full py-4 text-base font-black shadow-lg shadow-brand-600/25 active:scale-[0.99] transition-all disabled:opacity-50"
-      >
-        {pending ? <Spinner /> : <CheckCircle2 className="w-5 h-5 inline mr-2" />}
-        Confirmar Reserva
+      <button type="button" disabled={pending || !plan} onClick={() => void handleConfirm()} className="btn btn-primary btn-lg btn-block">
+        {pending ? <Spinner /> : <CheckCircle2 className="h-5 w-5" />}
+        Confirmar pré-reserva
       </button>
     </div>
   );
