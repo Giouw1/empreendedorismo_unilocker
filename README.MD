@@ -49,17 +49,18 @@ UniLocker/
 
 ## Como Executar Localmente
 
-**Pré-requisito:** Node.js LTS instalado.
+Pré-requisitos: **Node.js 20 ou mais novo** e **Git**. No PowerShell do Windows com restrição de scripts, use `npm.cmd` no lugar de `npm`.
 
-### 1. Rodar o Backend (`http://localhost:3000/api`)
+### 1. Backend (`http://localhost:3000/api`)
 ```bash
 cd backend
-npm install
+npm install        # também gera o cliente do Prisma
+npm run setup      # cria o .env, o banco SQLite e os dados de demonstração
 npm run start:dev
 ```
-*(No PowerShell do Windows com restrição de scripts, utilize `npm.cmd` no lugar de `npm`.)*
+O `npm run setup` pode ser rodado de novo a qualquer momento (por exemplo, depois de um `git pull` que traga migrações novas). Pare o backend antes, porque o banco fica travado enquanto ele roda.
 
-### 2. Rodar o Frontend (`http://localhost:5173`)
+### 2. Frontend (`http://localhost:5173`)
 Em outro terminal:
 ```bash
 cd frontend
@@ -67,9 +68,16 @@ npm install
 npm run dev
 ```
 
-### Contas de Demonstração (Senha padrão: `123456`)
-Na tela inicial ou no topo do app há também um **Seletor Rápido de Persona em 1 clique**:
-- **Cintra (Aluna c/ reserva ativa):** `cintra@poli.ufrj.br`
-- **Joaquim (Aluno p/ contratação pontual):** `joaquim@letras.ufrj.br`
-- **Prof. Guilherme (Parceiro aprovado):** `guilherme@eba.ufrj.br`
-- **Administrador:** `admin@unilocker.ufrj.br`
+### Problemas comuns
+- **Backend fecha com "Configure JWT_SECRET"**: falta o `backend/.env`. Rode `npm run setup`.
+- **Erros de TypeScript sobre `@prisma/client`** ou **"Erro interno do servidor"**: o cliente do Prisma ou o banco estão desatualizados. Pare o backend e rode `npm run setup`.
+- **"database is locked"**: o backend ainda está rodando. Pare com Ctrl+C e repita o comando.
+- **Tela sem estilo** depois de instalar pacotes: pare o `npm run dev` e rode de novo.
+- **Porta 3000 ou 5173 ocupada**: feche o outro processo que usa a porta.
+
+### Acesso rápido (apresentação) — senha padrão `123456`
+Na tela inicial, o menu ⋮ no canto do login entra direto como:
+- **Aluno (Cintra):** `cintra@poli.ufrj.br`
+- **Professor/Parceiro (Prof. Guilherme):** `guilherme@eba.ufrj.br`
+
+Outras contas para testes: `joaquim@letras.ufrj.br` (aluno) e `admin@unilocker.ufrj.br` (administrador).

@@ -5,6 +5,8 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "postinstall": "prisma generate",
+    "setup": "node scripts/setup.cjs",
     "build": "nest build",
     "start": "nest start",
     "start:dev": "nest start --watch",
